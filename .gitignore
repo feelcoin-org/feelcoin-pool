@@ -1,2 +1,8 @@
 build
 
+
+# Feelcoin development files
+*.log
+*.backup
+*.before-feelcoin
+*.before-boost-link-fix

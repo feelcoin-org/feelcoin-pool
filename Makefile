@@ -28,7 +28,7 @@
 #  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 #  POSSIBILITY OF SUCH DAMAGE.
 
-TARGET = monero-pool
+TARGET = feelcoin-pool
 
 TYPE = debug
 
@@ -73,7 +73,7 @@ CPPDEFS = _GNU_SOURCE AUTO_INITIALIZE_EASYLOGGINGPP LOG_USE_COLOR
 W = -W -Wall -Wno-unused-parameter -Wuninitialized -Wno-attributes
 OPT = -maes -fPIC
 CFLAGS += $(W) -Wbad-function-cast $(OPT) -std=c99
-CXXFLAGS += $(W) -Wno-reorder $(OPT) -std=c++14
+CXXFLAGS += $(W) -Wno-reorder $(OPT) -std=c++17
 LDPARAM += -fPIC -pie
 
 ifeq ($(OS), Darwin)
@@ -98,12 +98,12 @@ LDPARAM += $(LDFLAGS)
 LIBS := lmdb pthread unbound
 ifeq ($(OS), Darwin)
   LIBS += c++ \
-	  boost_system-mt boost_date_time-mt boost_chrono-mt \
+	  -mt boost_date_time-mt boost_chrono-mt \
 	  boost_filesystem-mt boost_thread-mt boost_regex-mt \
 	  boost_serialization-mt boost_program_options-mt
 else
   LIBS += dl uuid \
-	  boost_system boost_date_time boost_chrono \
+	  boost_date_time boost_chrono \
 	  boost_filesystem boost_thread boost_regex \
 	  boost_serialization boost_program_options
 endif

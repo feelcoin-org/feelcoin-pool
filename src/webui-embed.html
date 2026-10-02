@@ -1,226 +1,1910 @@
 <!doctype html>
-<html>
-    <head>
-        <title>monero-pool</title>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <style>
-            body {
-                font-family: "Courier New", Courier, monospace;
-            }
-            header {
-                font-size: larger;
-                font-weight: bold;
-                padding-bottom: 1em;
-            }
-            table {
-                padding-bottom: 1em;
-            }
-            td {
-                vertical-align: top;
-                white-space: nowrap;
-            }
-            td:last-child {
-                white-space: unset;
-            }
-            .miner {
-                display: none;
-            }
-            #address {
-                min-width: 10ch;
-                max-width: 10ch;
-                overflow: hidden;
-                border-bottom: 1px dashed black;
-                text-overflow: ellipsis;
-                white-space: nowrap;
-                word-wrap: unset;
-            }
-            #address:focus {
-                outline: 0px solid transparent;
-                text-overflow: initial;
-                white-space: initial;
-                word-wrap: break-word;
-            }
-        </style>
-    </head>
-    <body>
-        <header>Monero Mining Pool</header>
-        <table>
-            <tr><td>Pool HR: </td><td id="pool_hashrate"></td></tr>
-            <tr><td>Network HR: </td><td id="network_hashrate"></td></tr>
-            <tr><td>Network height: </td><td id="network_height"></td></tr>
-            <tr><td>Blocks found: </td><td id="pool_blocks_found"></td></tr>
-            <tr><td>Last block found: </td><td id="last_block_found"></td></tr>
-            <tr><td>Last template: </td><td id="last_template_fetched"></td></tr>
-            <tr><td>Round HR: </td><td id="round_hashrate"></td></tr>
-            <tr><td>Round hashes: </td><td id="round_hashes"></td></tr>
-            <tr><td>Payment threshold: </td><td id="payment_threshold"></td></tr>
-            <tr><td>Pool fee: </td><td id="pool_fee"></td></tr>
-            <tr><td>Pool port: </td><td id="pool_port"></td></tr>
-            <tr><td>Pool SSL port: </td><td id="pool_ssl_port"></td></tr>
-            <tr><td>Allow self-select: </td><td id="allow_self_select"></td></tr>
-            <tr><td>Miners connected: </td><td id="connected_miners"></td></tr>
-            <tr class="miner"><td>Your HR: </td><td id="miner_hashrate"></td></tr>
-            <tr class="miner"><td>Balance due: </td><td id="miner_balance"></td></tr>
-            <tr><td>Miner address: </td><td id="address" contenteditable="true"></td></tr>
-        </table>
-        <small><a href="https://github.com/jtgrassie/monero-pool">https://github.com/jtgrassie/monero-pool</a></small>
-        <script>
-            function format_last_time(last)
-            {
-                var now = new Date().getTime() / 1000;
-                var diff = now - last;
-                var v;
-                if (last == 0)
-                    return "None yet";
-                else if (diff <= 0)
-                    return "Just now";
-                else if (diff < 60)
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#070b14">
+
+<title>Feelcoin Mining Pool</title>
+
+<style>
+:root{
+    --bg:#070b14;
+    --panel:#0d1422;
+    --panel2:#111a2b;
+    --line:#1d2a40;
+    --text:#eef4ff;
+    --muted:#8da0ba;
+    --purple:#7c5cff;
+    --green:#22d3a6;
+    --yellow:#ffc857;
+    --red:#ff5f73;
+    --radius:18px;
+}
+
+*{
+    box-sizing:border-box;
+}
+
+html{
+    scroll-behavior:smooth;
+}
+
+body{
+    margin:0;
+    background:
+        radial-gradient(circle at 20% -10%,rgba(124,92,255,.18),transparent 35%),
+        radial-gradient(circle at 90% 0%,rgba(34,211,166,.08),transparent 30%),
+        var(--bg);
+
+    color:var(--text);
+
+    font-family:
+        Inter,
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+}
+
+a{
+    color:inherit;
+    text-decoration:none;
+}
+
+button,
+input{
+    font:inherit;
+}
+
+.shell{
+    max-width:1440px;
+    margin:auto;
+    padding:22px;
+}
+
+#dashboard,
+#mining,
+#miner,
+#poolinfo,
+#faq,
+#connect{
+    scroll-margin-top:120px;
+}
+
+/* HEADER */
+
+.topbar{
+    position:sticky;
+    top:12px;
+    z-index:50;
+
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:20px;
+
+    padding:16px 22px;
+
+    background:rgba(13,20,34,.93);
+
+    border:1px solid var(--line);
+    border-radius:22px;
+
+    backdrop-filter:blur(18px);
+}
+
+.brand{
+    display:flex;
+    align-items:center;
+    gap:15px;
+}
+
+.coin{
+    width:64px;
+    height:64px;
+
+    border-radius:50%;
+    object-fit:cover;
+
+    border:2px solid rgba(255,255,255,.22);
+
+    box-shadow:
+        0 0 30px rgba(124,92,255,.25),
+        inset 0 0 10px rgba(255,255,255,.1);
+}
+
+.brand h1{
+    margin:0;
+    font-size:21px;
+}
+
+.brand p{
+    margin:4px 0 0;
+    color:var(--muted);
+    font-size:13px;
+}
+
+.nav{
+    display:flex;
+    gap:5px;
+}
+
+.nav a{
+    color:#98a8bf;
+    padding:10px 12px;
+    border-radius:10px;
+    font-size:14px;
+    transition:.2s;
+}
+
+.nav a:hover{
+    background:#141f32;
+    color:white;
+}
+
+.status{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:13px;
+}
+
+.dot{
+    width:9px;
+    height:9px;
+    border-radius:50%;
+    background:var(--green);
+    box-shadow:0 0 14px var(--green);
+}
+
+/* BETA WARNING */
+
+.beta{
+    margin-top:18px;
+    padding:14px 18px;
+
+    border:1px solid rgba(255,200,87,.35);
+    background:rgba(255,200,87,.08);
+
+    border-radius:14px;
+
+    color:#ffd97c;
+    font-size:13px;
+}
+
+/* HERO */
+
+.hero{
+    display:grid;
+    grid-template-columns:1.4fr .6fr;
+    gap:18px;
+    margin-top:18px;
+}
+
+.card{
+    background:
+        linear-gradient(
+            180deg,
+            rgba(17,26,43,.96),
+            rgba(10,17,30,.96)
+        );
+
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+}
+
+.hero-main{
+    padding:34px;
+    min-height:290px;
+}
+
+.eyebrow{
+    color:#a995ff;
+    font-size:12px;
+    font-weight:800;
+    letter-spacing:.15em;
+}
+
+.hero-main h2{
+    font-size:42px;
+    line-height:1.08;
+    margin:13px 0;
+}
+
+.hero-main p{
+    color:var(--muted);
+    max-width:720px;
+    line-height:1.6;
+}
+
+.chips{
+    display:flex;
+    flex-wrap:wrap;
+    gap:9px;
+    margin-top:25px;
+}
+
+.chip{
+    padding:8px 12px;
+
+    background:#101929;
+    border:1px solid #28374e;
+
+    border-radius:999px;
+
+    color:#bcc8d8;
+    font-size:12px;
+}
+
+.quick{
+    padding:25px;
+}
+
+.quick h3{
+    margin-top:0;
+}
+
+.info-line{
+    padding:14px 0;
+    border-bottom:1px solid var(--line);
+}
+
+.info-line:last-child{
+    border:0;
+}
+
+.label{
+    color:var(--muted);
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:.08em;
+}
+
+.value{
+    margin-top:5px;
+    font-size:16px;
+    font-weight:800;
+}
+
+/* METRICS */
+
+.metrics{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:14px;
+    margin-top:18px;
+}
+
+.metric{
+    padding:21px;
+}
+
+.metric .big{
+    font-size:28px;
+    font-weight:900;
+    margin-top:6px;
+}
+
+.small{
+    margin-top:7px;
+    color:var(--muted);
+    font-size:12px;
+}
+
+/* SECTIONS */
+
+.section{
+    margin-top:18px;
+    padding:25px;
+}
+
+.section-title{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:15px;
+    margin-bottom:20px;
+}
+
+.section-title h2{
+    margin:0;
+    font-size:19px;
+}
+
+.section-title p{
+    margin:4px 0 0;
+    color:var(--muted);
+    font-size:13px;
+}
+
+.two-column{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:16px;
+}
+
+.three-column{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:14px;
+}
+
+/* START MINING */
+
+.connection{
+    background:#09111f;
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:17px;
+}
+
+.connection strong{
+    display:block;
+    margin-top:7px;
+    word-break:break-word;
+}
+
+.codebox{
+    position:relative;
+
+    margin-top:14px;
+
+    padding:18px;
+
+    border-radius:14px;
+    border:1px solid #25344b;
+
+    background:#050a12;
+
+    overflow:auto;
+}
+
+.codebox pre{
+    margin:0;
+    color:#bed0e5;
+    font-family:"Courier New",monospace;
+    font-size:13px;
+    line-height:1.55;
+}
+
+.copy{
+    position:absolute;
+    top:9px;
+    right:9px;
+
+    border:1px solid #334762;
+    background:#111c2c;
+
+    color:#dce8f8;
+
+    padding:6px 10px;
+
+    border-radius:8px;
+
+    cursor:pointer;
+}
+
+.copy:hover{
+    background:#19283d;
+}
+
+/* POOL INFO */
+
+.info-grid{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:12px;
+}
+
+.info-box{
+    padding:17px;
+
+    background:#09111f;
+
+    border:1px solid var(--line);
+
+    border-radius:14px;
+}
+
+.info-box strong{
+    display:block;
+    margin-top:7px;
+    font-size:17px;
+}
+
+/* MINER */
+
+.lookup{
+    display:flex;
+    gap:10px;
+}
+
+.lookup input{
+    flex:1;
+
+    padding:14px;
+
+    background:#08101d;
+    color:white;
+
+    border:1px solid #263650;
+    border-radius:12px;
+
+    outline:none;
+}
+
+.lookup input:focus{
+    border-color:var(--purple);
+}
+
+.primary{
+    border:0;
+
+    padding:0 20px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #7c5cff,
+            #6044dc
+        );
+
+    color:white;
+
+    border-radius:12px;
+
+    cursor:pointer;
+
+    font-weight:800;
+}
+
+.minerstats{
+    display:none;
+
+    grid-template-columns:repeat(3,1fr);
+
+    gap:12px;
+
+    margin-top:16px;
+}
+
+.minerstats.show{
+    display:grid;
+}
+
+/* FAQ */
+
+.faq-item{
+    border-bottom:1px solid var(--line);
+    padding:18px 0;
+}
+
+.faq-item:last-child{
+    border-bottom:0;
+}
+
+.faq-item h3{
+    margin:0 0 8px;
+    font-size:15px;
+}
+
+.faq-item p{
+    margin:0;
+    color:var(--muted);
+    line-height:1.6;
+}
+
+/* FOOTER */
+
+footer{
+    display:flex;
+    justify-content:space-between;
+
+    margin-top:20px;
+
+    padding:25px 5px;
+
+    color:var(--muted);
+
+    font-size:12px;
+}
+
+/* MOBILE */
+
+@media(max-width:1050px){
+
+    .hero{
+        grid-template-columns:1fr;
+    }
+
+    .metrics{
+        grid-template-columns:repeat(2,1fr);
+    }
+
+    .info-grid{
+        grid-template-columns:repeat(2,1fr);
+    }
+
+    .nav{
+        display:none;
+    }
+}
+
+@media(max-width:650px){
+
+    .shell{
+        padding:10px;
+    }
+
+    .coin{
+        width:50px;
+        height:50px;
+    }
+
+    .brand h1{
+        font-size:18px;
+    }
+
+    .brand p{
+        display:none;
+    }
+
+    .hero-main{
+        padding:23px;
+    }
+
+    .hero-main h2{
+        font-size:30px;
+    }
+
+    .metrics,
+    .info-grid,
+    .two-column,
+    .three-column,
+    .minerstats{
+        grid-template-columns:1fr;
+    }
+
+    .lookup{
+        flex-direction:column;
+    }
+
+    .primary{
+        padding:13px;
+    }
+
+    footer{
+        flex-direction:column;
+        gap:8px;
+    }
+}
+</style>
+</head>
+
+
+<body>
+
+<div class="shell">
+
+<header class="topbar">
+
+<div class="brand">
+
+<img
+class="coin"
+src="https://i.imgur.com/VPorAY4.jpeg"
+alt="Feelcoin Logo">
+
+<div>
+
+<h1>Feelcoin Pool</h1>
+
+<p>RandomX Mining Network</p>
+
+</div>
+
+</div>
+
+
+<nav class="nav">
+
+<a href="#dashboard">Dashboard</a>
+
+<a href="#mining">Start Mining</a>
+
+<a href="#miner">Miner</a>
+
+<a href="#poolinfo">Pool Info</a>
+
+<a href="#faq">FAQ</a>
+
+<a href="http://162.35.27.43:8081">
+Explorer
+</a>
+
+</nav>
+
+
+<div class="status">
+
+<span class="dot"></span>
+
+<span id="poolStatus">
+Pool Online
+</span>
+
+</div>
+
+</header>
+
+
+
+<div class="beta">
+
+<strong>Feelcoin Network Beta</strong>
+
+— Mining is operational.
+
+Automatic payouts are currently disabled while the
+pool and network are being tested.
+
+</div>
+
+
+
+<main id="dashboard">
+
+
+<section class="hero">
+
+
+<div class="card hero-main">
+
+<div class="eyebrow">
+
+FEELCOIN • RANDOMX
+
+</div>
+
+<h2>
+
+Mine Feelcoin.<br>
+
+Simple. Transparent. Decentralized.
+
+</h2>
+
+<p>
+
+Official Feelcoin RandomX mining pool with live statistics,
+dynamic mining difficulty and PPLNS reward accounting.
+
+</p>
+
+
+<div class="chips">
+
+<span class="chip">
+RandomX
+</span>
+
+<span class="chip">
+CPU Friendly
+</span>
+
+<span class="chip">
+PPLNS
+</span>
+
+<span class="chip">
+0.5% Pool Fee
+</span>
+
+<span class="chip">
+Dynamic Difficulty
+</span>
+
+</div>
+
+</div>
+
+
+
+<div class="card quick" id="connect">
+
+<h3>Quick Connect</h3>
+
+
+<div class="info-line">
+
+<div class="label">
+Pool Address
+</div>
+
+<div class="value">
+
+162.35.27.43:<span id="pool_port">4242</span>
+
+</div>
+
+</div>
+
+
+<div class="info-line">
+
+<div class="label">
+Algorithm
+</div>
+
+<div class="value">
+RandomX
+</div>
+
+</div>
+
+
+<div class="info-line">
+
+<div class="label">
+Pool Fee
+</div>
+
+<div class="value"
+id="pool_fee">
+
+0.5%
+
+</div>
+
+</div>
+
+
+<div class="info-line">
+
+<div class="label">
+Minimum Payout
+</div>
+
+<div class="value">
+
+<span id="payment_threshold">
+0.33
+</span>
+
+FEEL
+
+</div>
+
+</div>
+
+
+</div>
+
+</section>
+
+
+
+<section class="metrics">
+
+
+<div class="card metric">
+
+<div class="label">
+Pool Hashrate
+</div>
+
+<div class="big"
+id="pool_hashrate">
+
+—
+
+</div>
+
+<div class="small">
+Combined mining power
+</div>
+
+</div>
+
+
+
+<div class="card metric">
+
+<div class="label">
+Network Hashrate
+</div>
+
+<div class="big"
+id="network_hashrate">
+
+—
+
+</div>
+
+<div class="small">
+Feelcoin network
+</div>
+
+</div>
+
+
+
+<div class="card metric">
+
+<div class="label">
+Blockchain Height
+</div>
+
+<div class="big"
+id="network_height">
+
+—
+
+</div>
+
+<div class="small">
+Current chain height
+</div>
+
+</div>
+
+
+
+<div class="card metric">
+
+<div class="label">
+Connected Miners
+</div>
+
+<div class="big"
+id="connected_miners">
+
+—
+
+</div>
+
+<div class="small">
+Active miners
+</div>
+
+</div>
+
+
+</section>
+
+
+
+<section
+class="card section"
+id="mining">
+
+
+<div class="section-title">
+
+<div>
+
+<h2>
+Start Mining
+</h2>
+
+<p>
+
+Connect XMRig or another compatible
+RandomX miner.
+
+</p>
+
+</div>
+
+</div>
+
+
+
+<div class="info-grid">
+
+
+<div class="info-box">
+
+<div class="label">
+Pool
+</div>
+
+<strong>
+162.35.27.43:4242
+</strong>
+
+</div>
+
+
+<div class="info-box">
+
+<div class="label">
+Username
+</div>
+
+<strong>
+Your Feelcoin wallet
+</strong>
+
+</div>
+
+
+<div class="info-box">
+
+<div class="label">
+Password
+</div>
+
+<strong>
+x
+</strong>
+
+</div>
+
+
+<div class="info-box">
+
+<div class="label">
+Algorithm
+</div>
+
+<strong>
+RandomX
+</strong>
+
+</div>
+
+
+</div>
+
+
+
+<h3 style="margin-top:28px">
+
+XMRig Quick Command
+
+</h3>
+
+
+<div class="codebox">
+
+<button
+class="copy"
+onclick="copyText('xmrigCommand')">
+
+Copy
+
+</button>
+
+<pre id="xmrigCommand">xmrig -o 162.35.27.43:4242 -u YOUR_FEELCOIN_WALLET_ADDRESS -p x</pre>
+
+</div>
+
+
+
+<h3 style="margin-top:28px">
+
+XMRig Configuration
+
+</h3>
+
+
+<div class="codebox">
+
+<button
+class="copy"
+onclick="copyText('xmrigConfig')">
+
+Copy
+
+</button>
+
+<pre id="xmrigConfig">{
+  "autosave": true,
+
+  "cpu": {
+    "enabled": true,
+    "huge-pages": true,
+    "yield": true
+  },
+
+  "opencl": false,
+  "cuda": false,
+
+  "pools": [
+    {
+      "url": "162.35.27.43:4242",
+      "user": "YOUR_FEELCOIN_WALLET_ADDRESS",
+      "pass": "x",
+      "keepalive": true
+    }
+  ]
+}</pre>
+
+</div>
+
+
+</section>
+
+
+
+<section
+class="card section"
+id="poolinfo">
+
+
+<div class="section-title">
+
+<div>
+
+<h2>
+Pool Information
+</h2>
+
+<p>
+
+Current Feelcoin pool configuration.
+
+</p>
+
+</div>
+
+</div>
+
+
+
+<div class="info-grid">
+
+
+<div class="info-box">
+
+<div class="label">
+Reward Scheme
+</div>
+
+<strong>
+PPLNS
+</strong>
+
+</div>
+
+
+<div class="info-box">
+
+<div class="label">
+Pool Fee
+</div>
+
+<strong id="infoFee">
+0.5%
+</strong>
+
+</div>
+
+
+<div class="info-box">
+
+<div class="label">
+Minimum Payout
+</div>
+
+<strong>
+
+<span id="infoThreshold">
+0.33
+</span>
+
+FEEL
+
+</strong>
+
+</div>
+
+
+<div class="info-box">
+
+<div class="label">
+Starting Difficulty
+</div>
+
+<strong>
+100
+</strong>
+
+</div>
+
+
+<div class="info-box">
+
+<div class="label">
+Difficulty Retarget
+</div>
+
+<strong>
+30 seconds
+</strong>
+
+</div>
+
+
+<div class="info-box">
+
+<div class="label">
+NiceHash Difficulty
+</div>
+
+<strong>
+280000
+</strong>
+
+</div>
+
+
+<div class="info-box">
+
+<div class="label">
+TLS / SSL
+</div>
+
+<strong>
+Coming Soon
+</strong>
+
+</div>
+
+
+<div class="info-box">
+
+<div class="label">
+Payout Status
+</div>
+
+<strong style="color:#ffc857">
+
+Testing / Disabled
+
+</strong>
+
+</div>
+
+
+</div>
+
+
+</section>
+
+
+
+<section
+class="card section"
+id="miner">
+
+
+<div class="section-title">
+
+<div>
+
+<h2>
+Miner Dashboard
+</h2>
+
+<p>
+
+Enter your Feelcoin wallet address to
+load miner statistics.
+
+</p>
+
+</div>
+
+</div>
+
+
+
+<div class="lookup">
+
+<input
+id="addressInput"
+placeholder="Your Feelcoin wallet address"
+autocomplete="off"
+spellcheck="false">
+
+
+<button
+class="primary"
+id="lookupButton">
+
+Load Miner
+
+</button>
+
+</div>
+
+
+
+<div
+class="minerstats"
+id="minerStats">
+
+
+<div class="info-box">
+
+<div class="label">
+Your Hashrate
+</div>
+
+<strong
+id="miner_hashrate">
+
+—
+
+</strong>
+
+</div>
+
+
+<div class="info-box">
+
+<div class="label">
+Balance Due
+</div>
+
+<strong
+id="miner_balance">
+
+—
+
+</strong>
+
+</div>
+
+
+<div class="info-box">
+
+<div class="label">
+Wallet
+</div>
+
+<strong
+id="walletDisplay"
+style="font-size:12px">
+
+—
+
+</strong>
+
+</div>
+
+
+</div>
+
+
+</section>
+
+
+
+<section
+class="card section"
+id="faq">
+
+
+<div class="section-title">
+
+<div>
+
+<h2>
+Frequently Asked Questions
+</h2>
+
+<p>
+Feelcoin mining basics.
+</p>
+
+</div>
+
+</div>
+
+
+
+<div class="faq-item">
+
+<h3>
+How do I mine Feelcoin?
+</h3>
+
+<p>
+
+Use a RandomX-compatible miner such as XMRig.
+Connect to
+
+<strong>
+162.35.27.43:4242
+</strong>
+
+and use your Feelcoin wallet address as
+the username.
+
+</p>
+
+</div>
+
+
+
+<div class="faq-item">
+
+<h3>
+What password should I use?
+</h3>
+
+<p>
+
+Use
+
+<strong>x</strong>.
+
+The password field is required by the
+Stratum protocol but is not used for
+authentication.
+
+</p>
+
+</div>
+
+
+
+<div class="faq-item">
+
+<h3>
+What is the pool fee?
+</h3>
+
+<p>
+
+The Feelcoin pool fee is currently
+<strong>0.5%</strong>.
+
+</p>
+
+</div>
+
+
+
+<div class="faq-item">
+
+<h3>
+What payout method is used?
+</h3>
+
+<p>
+
+The pool uses PPLNS reward accounting.
+
+</p>
+
+</div>
+
+
+
+<div class="faq-item">
+
+<h3>
+What is the minimum payout?
+</h3>
+
+<p>
+
+The configured minimum payout is
+
+<strong>
+0.33 FEEL
+</strong>.
+
+Automatic payouts are currently disabled
+during the network testing phase.
+
+</p>
+
+</div>
+
+
+
+<div class="faq-item">
+
+<h3>
+How is mining difficulty handled?
+</h3>
+
+<p>
+
+Workers begin at difficulty 100 and the pool
+automatically retargets approximately every
+30 seconds according to miner performance.
+
+</p>
+
+</div>
+
+
+
+<div class="faq-item">
+
+<h3>
+Does the pool support TLS?
+</h3>
+
+<p>
+
+Not yet.
+
+The current public Stratum endpoint is
+162.35.27.43:4242 without TLS.
+
+A secure mining endpoint will be added later.
+
+</p>
+
+</div>
+
+
+
+<div class="faq-item">
+
+<h3>
+What does an accepted share mean?
+</h3>
+
+<p>
+
+An accepted share means that your miner submitted
+valid work to the Feelcoin pool.
+
+Shares are used to determine each miner's
+contribution to pool rewards.
+
+</p>
+
+</div>
+
+
+</section>
+
+
+
+<footer>
+
+<span>
+
+© <span id="year"></span>
+Feelcoin Network
+
+• In Feels We Trust
+
+</span>
+
+
+<span id="updated">
+
+Waiting for pool data...
+
+</span>
+
+</footer>
+
+
+</main>
+
+</div>
+
+
+
+<script>
+
+(function(){
+
+"use strict";
+
+
+const $ = id =>
+    document.getElementById(id);
+
+
+$("year").textContent =
+    new Date().getFullYear();
+
+
+
+function formatNumber(v){
+
+    const n =
+        Number(v);
+
+    if(!Number.isFinite(n))
+        return v;
+
+    return n.toLocaleString();
+
+}
+
+
+
+function formatHashes(h){
+
+    h = Number(h) || 0;
+
+    if(h < 1000)
+        return Math.round(h) + " H";
+
+    if(h < 1000000)
+        return (h / 1000).toFixed(2) + " KH";
+
+    if(h < 1000000000)
+        return (h / 1000000).toFixed(2) + " MH";
+
+    if(h < 1000000000000)
+        return (h / 1000000000).toFixed(2) + " GH";
+
+    return (h / 1000000000000).toFixed(2) + " TH";
+
+}
+
+
+
+function formatHashrate(v){
+
+    return formatHashes(v) + "/s";
+
+}
+
+
+
+function formatTime(last){
+
+    last =
+        Number(last) || 0;
+
+    if(!last)
+        return "None yet";
+
+    const diff =
+        Math.max(
+            0,
+            Date.now()/1000-last
+        );
+
+
+    if(diff < 10)
+        return "Just now";
+
+    if(diff < 60)
+        return Math.floor(diff) + " sec ago";
+
+    if(diff < 3600)
+        return Math.floor(diff/60) + " min ago";
+
+    if(diff < 86400)
+        return Math.floor(diff/3600) + " hr ago";
+
+    return Math.floor(diff/86400) + " days ago";
+
+}
+
+
+
+function getCookie(name){
+
+    const entries =
+        document.cookie.split(";");
+
+    for(const entry of entries){
+
+        const parts =
+            entry.trim().split("=");
+
+        if(parts[0] === name)
+            return decodeURIComponent(
+                parts.slice(1).join("=")
+            );
+
+    }
+
+    return "";
+
+}
+
+
+
+function setWallet(address){
+
+    document.cookie =
+        "wa=" +
+        encodeURIComponent(address) +
+        ";path=/;max-age=31536000;SameSite=Lax";
+
+}
+
+
+
+function shortWallet(a){
+
+    if(!a)
+        return "—";
+
+    if(a.length < 22)
+        return a;
+
+    return (
+        a.slice(0,10) +
+        "..." +
+        a.slice(-10)
+    );
+
+}
+
+
+
+function applyStats(stats){
+
+    if(stats.pool_hashrate !== undefined)
+        $("pool_hashrate").textContent =
+            formatHashrate(
+                stats.pool_hashrate
+            );
+
+
+    if(stats.network_hashrate !== undefined)
+        $("network_hashrate").textContent =
+            formatHashrate(
+                stats.network_hashrate
+            );
+
+
+    if(stats.network_height !== undefined)
+        $("network_height").textContent =
+            formatNumber(
+                stats.network_height
+            );
+
+
+    if(stats.connected_miners !== undefined)
+        $("connected_miners").textContent =
+            formatNumber(
+                stats.connected_miners
+            );
+
+
+    if(stats.pool_port !== undefined)
+        $("pool_port").textContent =
+            stats.pool_port;
+
+
+    if(stats.payment_threshold !== undefined){
+
+        $("payment_threshold").textContent =
+            stats.payment_threshold;
+
+        $("infoThreshold").textContent =
+            stats.payment_threshold;
+
+    }
+
+
+    if(stats.pool_fee !== undefined){
+
+        const fee =
+            Number(stats.pool_fee) * 100;
+
+        const formatted =
+            fee.toFixed(
+                Number.isInteger(fee)
+                    ? 0
+                    : 2
+            ) + "%";
+
+        $("pool_fee").textContent =
+            formatted;
+
+        $("infoFee").textContent =
+            formatted;
+
+    }
+
+
+    if(stats.miner_hashrate !== undefined)
+        $("miner_hashrate").textContent =
+            formatHashrate(
+                stats.miner_hashrate
+            );
+
+
+    if(stats.miner_balance !== undefined)
+        $("miner_balance").textContent =
+            formatNumber(
+                stats.miner_balance
+            );
+
+
+    $("poolStatus").textContent =
+        "Pool Online";
+
+
+    document.querySelector(".dot")
+        .style.background =
+        "var(--green)";
+
+
+    $("updated").textContent =
+        "Updated " +
+        new Date().toLocaleTimeString();
+
+}
+
+
+
+async function refresh(){
+
+    try{
+
+        const response =
+            await fetch(
+                "/stats",
                 {
-                    v = parseInt(diff);
-                    return v + " second" + (v != 1 ? "s" : "") + " ago";
+                    cache:"no-store"
                 }
-                else if (diff < 3600)
-                {
-                    v = parseInt(diff/60);
-                    return v + " minute" + (v != 1 ? "s" : "") + " ago";
-                }
-                else if (diff < 86400)
-                {
-                    v = parseInt(diff/3600);
-                    return v + " hour" + (v != 1 ? "s" : "") + " ago";
-                }
-                else
-                {
-                    v = parseInt(diff/86400);
-                    return v + " day" + (v != 1 ? "s" : "") + " ago";
-                }
-            }
+            );
 
-            function max_precision(n, p)
-            {
-                return parseFloat(parseFloat(n).toFixed(p));
-            }
 
-            function format_hashes(h)
-            {
-                if (h < 1e-12)
-                    return "0 H";
-                else if (h < 1e-9)
-                    return max_precision(h*1e+12, 0) + " pH";
-                else if (h < 1e-6)
-                    return max_precision(h*1e+9, 0) + " nH";
-                else if (h < 1e-3)
-                    return max_precision(h*1e+6, 0) + " μH";
-                else if (h < 1)
-                    return max_precision(h*1e+3, 0) + " mH";
-                else if (h < 1e+3)
-                    return parseInt(h) + " H";
-                else if (h < 1e+6)
-                    return max_precision(h*1e-3, 2) + " KH";
-                else if (h < 1e+9)
-                    return max_precision(h*1e-6, 2) + " MH";
-                else
-                    return max_precision(h*1e-9, 2) + " GH";
-            }
+        if(!response.ok)
+            throw new Error(
+                "HTTP " +
+                response.status
+            );
 
-            function format_hashrate(h)
-            {
-                return format_hashes(h) + "/s";
-            }
 
-            function format_round_hashrate(round_hashes, last_block_found)
-            {
-                var now = new Date().getTime() / 1000;
-                var diff = now - last_block_found;
-                if (last_block_found == 0)
-                    return 0;
-                if (diff <= 0)
-                    return 0;
-                return format_hashrate(round_hashes / diff);
-            }
+        const stats =
+            await response.json();
 
-            var wf = document.querySelector("#address");
-            var xhr = new XMLHttpRequest();
-            var rhr = document.querySelector("#round_hashrate");
 
-            xhr.onload = function()
-            {
-                var stats = JSON.parse(xhr.responseText);
-                for (var e in stats)
-                {
-                    var el = document.querySelector("#"+e);
-                    if (!el)
-                        continue;
-                    if (/^last/.test(e))
-                        el.innerHTML = format_last_time(stats[e]);
-                    else if (/hashrate/.test(e))
-                        el.innerHTML = format_hashrate(stats[e]);
-                    else if (e == "pool_fee")
-                        el.innerHTML = (stats[e]*100) + "%";
-                    else if (e == "allow_self_select")
-                        el.innerHTML = stats[e] == 1 ? "Yes" : "No";
-                    else if (e == "round_hashes")
-                    {
-                        el.innerHTML = max_precision(stats[e]*100 /
-                            stats["network_difficulty"], 1) + "%" +
-                            " (" + format_hashes(stats[e]) + " / " +
-                            format_hashes(stats["network_difficulty"]) + ")";
-                        rhr.innerHTML = format_round_hashrate(
-                            stats["round_hashes"], stats["last_block_found"]);
-                    }
-                    else if (e == "pool_ssl_port")
-                    {
-                        el.closest("tr").style = "display: " +
-                            (stats[e] == 0 ? "none;" : "table-row;");
-                        el.innerHTML = stats[e];
-                    }
-                    else
-                        el.innerHTML = stats[e];
-                }
-            };
+        applyStats(stats);
 
-            wf.onblur = function(e)
-            {
-                var d = new Date();
-                d.setTime(d.getTime() + (86400 * 365 * 1000));
-                document.cookie = "wa=" + this.innerText +
-                    ";expires=" + d.toGMTString();
-                window.location.reload();
-                return false;
-            };
+    }
 
-            window.onload = function()
-            {
-                var jar = {};
-                for (var kv, i=0, kvs=document.cookie.split(/\s*;\s*/); i<kvs.length; i++)
-                {
-                    kv = kvs[i].split(/\s*=\s*/);
-                    if (kv.length > 1)
-                    {
-                        try {
-                            jar[kv[0]] = kv[1];
-                        } catch (e) {}
-                    }
-                }
-                if (jar.wa &&
-                    /^[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]+$/.test(jar.wa))
-                {
-                    var m = document.querySelectorAll(".miner");
-                    for (var i=0; i<m.length; i++)
-                    {
-                        m[i].style = "display: table-row;";
-                    }
-                    wf.innerText = jar.wa;
-                }
-                var get_stats = function()
-                {
-                    xhr.open("GET", "/stats");
-                    xhr.send(null);
-                };
-                setInterval(get_stats, 30000);
-                get_stats();
-            };
-        </script>
-    </body>
+    catch(error){
+
+        $("poolStatus").textContent =
+            "Stats Offline";
+
+
+        document.querySelector(".dot")
+            .style.background =
+            "var(--red)";
+
+
+        $("updated").textContent =
+            "Unable to reach pool stats";
+
+    }
+
+}
+
+
+
+$("lookupButton")
+.addEventListener(
+    "click",
+    function(){
+
+        const address =
+            $("addressInput")
+            .value
+            .trim();
+
+
+        if(!address)
+            return;
+
+
+        setWallet(address);
+
+
+        $("walletDisplay")
+            .textContent =
+            shortWallet(address);
+
+
+        $("minerStats")
+            .classList
+            .add("show");
+
+
+        refresh();
+
+    }
+);
+
+
+
+$("addressInput")
+.addEventListener(
+    "keydown",
+    function(e){
+
+        if(e.key === "Enter")
+            $("lookupButton").click();
+
+    }
+);
+
+
+
+const existingWallet =
+    getCookie("wa");
+
+
+if(existingWallet){
+
+    $("addressInput").value =
+        existingWallet;
+
+
+    $("walletDisplay").textContent =
+        shortWallet(
+            existingWallet
+        );
+
+
+    $("minerStats")
+        .classList
+        .add("show");
+
+}
+
+
+
+refresh();
+
+setInterval(
+    refresh,
+    30000
+);
+
+
+
+})();
+
+
+
+function copyText(id){
+
+    const text =
+        document.getElementById(id)
+        .innerText;
+
+
+    navigator.clipboard
+        .writeText(text)
+        .then(function(){
+
+            alert(
+                "Copied to clipboard"
+            );
+
+        });
+
+}
+
+
+
+function showExplorer(){
+
+    alert(
+        "Feelcoin Block Explorer is the next component being deployed."
+    );
+
+}
+
+</script>
+
+</body>
 </html>
