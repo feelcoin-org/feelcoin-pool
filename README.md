@@ -469,13 +469,20 @@ https://github.com/jtgrassie/monero-pool
 
 The original project's copyright notices and licensing requirements remain applicable where required.
 
-License
+## License
 
 See the repository:
 
-LICENSE
+`LICENSE`
 
 for licensing information.
 
-<p align="center"> <strong>Feelcoin Network</strong> </p> <p align="center"> <strong>In Feels We Trust</strong> </p> 
+---
 
+<p align="center">
+  <strong>Feelcoin Network</strong>
+</p>
+
+<p align="center">
+  <strong>In Feels We Trust</strong>
+</p>
