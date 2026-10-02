@@ -434,7 +434,7 @@ Feelcoin Pool integrates with the Feelcoin Block Explorer.
 
 Live explorer: http://162.35.27.43:8081
 
-GitHub: https://github.com/feelcoin-dev/feelcoin-explorer
+GitHub: https://github.com/feelcoin-org/feelcoin-explorer
 
 The explorer currently provides:
 
@@ -532,15 +532,15 @@ Feelcoin Repositories
 
 Feelcoin Core
 
-https://github.com/feelcoin-dev/feelcoin
+https://github.com/feelcoin-org/feelcoin
 
 Feelcoin Mining Pool
 
-https://github.com/feelcoin-dev/feelcoin-pool
+https://github.com/feelcoin-org/feelcoin-pool
 
 Feelcoin Block Explorer
 
-https://github.com/feelcoin-dev/feelcoin-explorer
+https://github.com/feelcoin-org/feelcoin-explorer
 
 Feelcoin
 
