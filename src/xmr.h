@@ -61,7 +61,8 @@ void get_rx_hash(const unsigned char *seed_hash, const unsigned char *input,
         const size_t in_size, unsigned char *output);
 int validate_block_from_blob(const char *blob_hex,
         const unsigned char *sec_view,
-        const unsigned char *pub_spend);
+        const unsigned char *pub_spend,
+        uint64_t *miner_reward);
 
 #ifdef __cplusplus
 }

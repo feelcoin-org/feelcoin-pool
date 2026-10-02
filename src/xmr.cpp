@@ -161,7 +161,8 @@ void get_rx_hash(const unsigned char *seed_hash, const unsigned char *input,
 
 int validate_block_from_blob(const char *blob_hex,
         const unsigned char *sec_view,
-        const unsigned char *pub_spend)
+        const unsigned char *pub_spend,
+        uint64_t *miner_reward)
 {
     /*
       The only validation needed is that the data parses to a block and the
@@ -186,11 +187,24 @@ int validate_block_from_blob(const char *blob_hex,
     if (tx.vin.size() != 1)
         return XMR_VIN_COUNT_ERROR;
 
-    if (tx.vout.size() != 1)
-        return XMR_VOUT_COUNT_ERROR;
-
     if (tx.vin[0].type() != typeid(txin_gen))
         return XMR_VIN_TYPE_ERROR;
+
+    const uint64_t height = boost::get<txin_gen>(tx.vin[0]).height;
+
+    if (height >= 590)
+    {
+        if (tx.vout.size() != 2)
+            return XMR_VOUT_COUNT_ERROR;
+    }
+    else
+    {
+        if (tx.vout.size() != 1)
+            return XMR_VOUT_COUNT_ERROR;
+    }
+
+    if (miner_reward)
+        *miner_reward = tx.vout[0].amount;
 
     /*
       Ensure that the miner tx single output key is destined for the pool

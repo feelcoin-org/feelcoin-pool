@@ -1056,7 +1056,20 @@ process_blocks(block_t *blocks, size_t count)
                 continue;
             }
             nb.status |= BLOCK_UNLOCKED;
-            nb.reward = ib->reward;
+
+            /*
+             * New Feelcoin blocks store the actual pool/miner coinbase
+             * output in sb->reward.  This excludes the consensus treasury
+             * output while retaining all transaction fees.
+             *
+             * Older database entries may have reward == 0, so fall back
+             * to the daemon block-header reward for backward compatibility.
+             */
+            if (sb->reward != 0)
+                nb.reward = sb->reward;
+            else
+                nb.reward = ib->reward;
+
             if (!*config.upstream_host)
                 rc = payout_block(&nb, txn);
             if (*config.upstream_host || rc == 0)
@@ -1680,6 +1693,7 @@ rpc_request(struct event_base *base, const char *body,
     output = evhttp_request_get_output_buffer(req);
     evbuffer_add(output, body, strlen(body));
     headers = evhttp_request_get_output_headers(req);
+    evhttp_add_header(headers, "Host", config.rpc_host);
     evhttp_add_header(headers, "Content-Type", "application/json");
     evhttp_add_header(headers, "Connection", "close");
     evhttp_make_request(con, req, EVHTTP_REQ_POST, RPC_PATH);
@@ -1702,6 +1716,7 @@ rpc_wallet_request(struct event_base *base, const char *body,
     output = evhttp_request_get_output_buffer(req);
     evbuffer_add(output, body, strlen(body));
     headers = evhttp_request_get_output_headers(req);
+    evhttp_add_header(headers, "Host", config.wallet_rpc_host);
     evhttp_add_header(headers, "Content-Type", "application/json");
     evhttp_add_header(headers, "Connection", "close");
     evhttp_make_request(con, req, EVHTTP_REQ_POST, RPC_PATH);
@@ -3234,7 +3249,8 @@ miner_on_block_template(json_object *message, client_t *client)
 
     const char *btb = json_object_get_string(blob);
     int rc = 0;
-    if ((rc = validate_block_from_blob(btb, &sec_view[0], &pub_spend[0])))
+    if ((rc = validate_block_from_blob(
+            btb, &sec_view[0], &pub_spend[0], NULL)))
     {
         log_warn("Bad template submitted: %d", rc);
         send_validation_error(client, "block template blob invalid");
@@ -3527,6 +3543,22 @@ post_hash:
                  pool_stats.network_height);
         char *block_hex = calloc((bt->block_blob_size << 1)+1, sizeof(char));
         bin_to_hex(block, bt->block_blob_size, block_hex);
+
+        uint64_t miner_reward = 0;
+        int reward_rc = validate_block_from_blob(
+                block_hex, &sec_view[0], &pub_spend[0], &miner_reward);
+        if (reward_rc)
+        {
+            log_error("Unable to determine Feelcoin miner reward: %d", reward_rc);
+            free(block_hex);
+            BN_free(hd);
+            BN_free(jd);
+            BN_free(bd);
+            free(block);
+            free(hashing_blob);
+            return;
+        }
+
         char body[RPC_BODY_MAX] = {0};
         snprintf(body, RPC_BODY_MAX,
                 "{\"jsonrpc\":\"2.0\",\"id\":\"0\",\"method\":"
@@ -3544,6 +3576,7 @@ post_hash:
         strncpy(b->prev_hash, bt->prev_hash, 64);
         b->difficulty = bt->difficulty;
         b->status = BLOCK_LOCKED;
+        b->reward = miner_reward;
         b->timestamp = now;
         if (upstream_event)
             upstream_send_client_block(b);
