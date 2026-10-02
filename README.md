@@ -1,254 +1,480 @@
-# monero-pool
+<p align="center">
+  <img src="https://i.imgur.com/VPorAY4.jpeg" alt="Feelcoin Logo" width="170">
+</p>
 
-A Monero mining pool server written in C.
+<h1 align="center">Feelcoin Mining Pool</h1>
 
-Design decisions are focused on performance and efficiency, hence the use of
-libevent and LMDB.  Currently it uses only *two* threads under normal operation
-(one for the stratum clients and one for the web UI clients). It gets away with
-this thanks to the efficiency of both LMDB and libevent (for the stratum
-clients) and some sensible proxying/caching being placed in front of the [web
-UI](#web-ui).
+<p align="center">
+  Official RandomX mining pool for the Feelcoin network.
+</p>
 
-Configuration is extremely flexible, now allowing for the pool to run in a
-variety of setups, such as highly available and redundant configurations.
-Discussed further below in: [Interconnected pools](#Interconnected-pools).
+<p align="center">
+  <strong>In Feels We Trust</strong>
+</p>
 
-This pool was the *first* pool to support RandomX and is currently the *only*
-pool which supports the RandomX fast/full-memory mode.
+---
 
-The single payout mechanism is PPLNS, which favors loyal pool miners, and there
-are no plans to add any other payout mechanisms or other coins. Work should stay
-focussed on performance, efficiency and stability.
+## Overview
 
-The pool also supports an optional method of mining whereby miners select their
-*own* block template to mine on. Further information can be found in the
-document: [Stratum mode self-select](./sss.md).
+Feelcoin Mining Pool is the mining pool software for the Feelcoin network.
 
-For testing, a reference mainnet pool can be found at
-[monerop.com](http://monerop.com).
+It provides RandomX mining, PPLNS reward accounting, dynamic miner difficulty, live statistics, miner monitoring, an embedded web dashboard, and integration with the Feelcoin Block Explorer.
 
-## Compiling from source
+The pool is derived from the open-source `monero-pool` project and adapted for the Feelcoin network.
 
-### Dependencies
+---
 
-The build system requires the Monero source tree to be cloned and compiled.
-Follow the
-[instructions](https://github.com/monero-project/monero#compiling-monero-from-source)
-for compiling Monero, then export the following variable:
+## Features
 
-```bash
-export MONERO_ROOT=/path/to/cloned/monero
-```
+- RandomX Proof-of-Work mining
+- CPU-friendly mining
+- PPLNS reward accounting
+- Dynamic mining difficulty
+- Automatic difficulty retargeting
+- Live pool statistics
+- Network statistics
+- Miner dashboard
+- Miner hashrate monitoring
+- Miner balance tracking
+- Feelcoin wallet-based miner identification
+- Configurable pool fee
+- Configurable payout threshold
+- NiceHash difficulty support
+- Embedded professional web dashboard
+- Feelcoin Block Explorer integration
+- XMRig setup examples
+- systemd deployment support
 
-Replacing the path appropriately.
+---
 
-Beyond the Monero dependencies, the following extra libraries are also required
-to build the pool:
+## Live Feelcoin Services
 
-- liblmdb
-- libevent
-- json-c
-- uuid
+### Mining Pool
 
-As an example, on Ubuntu, these dependencies can be installed with the following
-command:
+```text
+162.35.27.43:4242
 
-```
-sudo apt-get install liblmdb-dev libevent-dev libjson-c-dev uuid-dev
-```
-### Compile
+Pool Dashboard
+http://162.35.27.43:4243
+Block Explorer
+http://162.35.27.43:8081
+Start Mining
 
-After installing all the dependencies as described above, to compile the pool as
-a release build, run:
+Feelcoin can be mined using XMRig or another compatible RandomX miner.
 
-```
+Connection Information
+Pool Address:  162.35.27.43
+Pool Port:     4242
+Algorithm:     RandomX
+Username:      Your Feelcoin wallet address
+Password:      x
+TLS/SSL:       Not enabled yet
+XMRig Quick Start
+xmrig -o 162.35.27.43:4242 -u YOUR_FEELCOIN_WALLET_ADDRESS -p x
+
+Replace:
+
+YOUR_FEELCOIN_WALLET_ADDRESS
+
+with your own Feelcoin wallet address.
+
+XMRig Configuration Example
+{
+  "autosave": true,
+  "cpu": {
+    "enabled": true,
+    "huge-pages": true,
+    "yield": true
+  },
+  "opencl": false,
+  "cuda": false,
+  "pools": [
+    {
+      "url": "162.35.27.43:4242",
+      "user": "YOUR_FEELCOIN_WALLET_ADDRESS",
+      "pass": "x",
+      "keepalive": true
+    }
+  ]
+}
+Current Pool Configuration
+Setting	Value
+Algorithm	RandomX
+Reward Scheme	PPLNS
+Mining Port	4242
+Pool Dashboard Port	4243
+Pool Fee	0.5%
+Minimum Payout	0.33 FEEL
+Starting Difficulty	100
+Fixed Difficulty	Disabled globally
+NiceHash Difficulty	280000
+Difficulty Retarget	30 seconds
+Retarget Ratio	0.55
+Share Multiplier	2.0
+TLS Mining	Not enabled yet
+Self Select	Disabled
+Automatic Payouts	Disabled during testing
+Pool Fee
+
+The current pool fee is:
+
+0.5%
+
+Configuration:
+
+pool-fee = 0.005
+
+A dedicated Feelcoin fee wallet can be configured with:
+
+pool-fee-wallet = YOUR_FEELCOIN_FEE_WALLET
+Minimum Payout
+
+The configured minimum payout threshold is:
+
+0.33 FEEL
+
+Configuration:
+
+payment-threshold = 0.33
+
+Automatic payouts may remain disabled while the network and pool are being tested.
+
+Reward Scheme
+
+Feelcoin Pool uses:
+
+PPLNS
+
+PPLNS means:
+
+Pay Per Last N Shares
+
+Miner rewards are calculated according to the valid shares contributed during the pool's active share window.
+
+An accepted share means that the miner submitted valid mining work to the pool.
+
+It does not mean that a block has been found immediately.
+
+Difficulty Management
+
+The pool starts miners at:
+
+100
+
+and automatically adjusts mining difficulty according to miner performance.
+
+Current configuration:
+
+pool-start-diff = 100
+pool-fixed-diff = 0
+pool-nicehash-diff = 280000
+
+retarget-time = 30
+retarget-ratio = 0.55
+Pool Configuration
+
+The main pool configuration file is:
+
+pool.conf
+
+Current configuration structure:
+
+pool-listen = 0.0.0.0
+pool-port = 4242
+
+pool-ssl-port =
+
+pool-syn-backlog = 16
+
+webui-listen = 0.0.0.0
+webui-port = 4243
+
+rpc-host = 127.0.0.1
+rpc-port = 35781
+
+wallet-rpc-host = 127.0.0.1
+wallet-rpc-port = 35784
+
+rpc-timeout = 15
+
+idle-timeout = 150
+template-timeout = 45
+
+pool-start-diff = 100
+pool-fixed-diff = 0
+pool-nicehash-diff = 280000
+
+pool-fee = 0.005
+
+payment-threshold = 0.33
+
+share-mul = 2.0
+
+retarget-time = 30
+retarget-ratio = 0.55
+
+disable-self-select = 1
+disable-hash-check = 0
+
+disable-payouts = 1
+
+processes = 1
+Feelcoin Daemon
+
+The mining pool requires a running Feelcoin daemon.
+
+Default daemon RPC endpoint:
+
+127.0.0.1:35781
+
+The pool uses the daemon to:
+
+obtain block templates
+read blockchain height
+retrieve network difficulty
+retrieve network information
+submit newly found blocks
+
+The daemon RPC should remain bound to localhost unless there is a specific reason to expose it.
+
+Feelcoin Wallet RPC
+
+Pool payout processing can use the Feelcoin wallet RPC service.
+
+Default wallet RPC endpoint:
+
+127.0.0.1:35784
+
+Configuration:
+
+wallet-rpc-host = 127.0.0.1
+wallet-rpc-port = 35784
+
+Do not expose wallet RPC publicly.
+
+Build
+
+The pool is compiled against the Feelcoin source tree.
+
+Set the Feelcoin source directory:
+
+export MONERO_ROOT=/home/feeladmin/feelcoin
+
+Build the pool:
+
 make release
-```
 
-The application will be built in `build/release/`.
+The resulting pool binary is:
 
-Optionally you can compile a debug build by simply running:
+build/release/feelcoin-pool
+Run Manually
+cd /home/feeladmin/feelcoin-pool
 
-```
-make
-```
+./build/release/feelcoin-pool pool.conf
 
-Debug builds are output in `build/debug/`.
+Run in the background:
 
-## Configuration
+nohup ./build/release/feelcoin-pool pool.conf > pool.log 2>&1 &
+systemd Service
 
-During compilation, a copy of [pool.conf](./pool.conf) is placed in the output
-build directory. Edit this file as you see fit. When running the pool, if a
-custom location is not set via the command-line parameter `--config-file
-<file>`, the pool will first look for this file in the same directory as the
-pool binary, then in the current users home directory. The configuration options
-should all be self explanatory.
+Feelcoin Pool can run automatically using systemd.
 
-There are also some [command-line parameters](#command-line-parameters) which
-can be used to override some of these settings.
+Example:
 
-### Block notification
+[Unit]
+Description=Feelcoin Mining Pool
+After=feelcoind.service
+Requires=feelcoind.service
 
-The pool can optionally be started with the flag `--block-notified` (or set in
-the config file: `block-notified = 1`). This will prevent the pool from
-*polling* for new blocks (using a timer), and instead fetch a new block template
-when it receives a *signal* (specifically, *SIGUSR1*). The Monero daemon,
-`monerod`, has a feature whereby it can execute a command whenever a block as
-added to the chain, which can thus be used to generate the required signal.
+[Service]
+User=feeladmin
+WorkingDirectory=/home/feeladmin/feelcoin-pool
 
-E.g.
+Environment=MONERO_ROOT=/home/feeladmin/feelcoin
 
-<pre>
-monerod ... <b>--block-notify '/usr/bin/pkill -USR1 monero-pool'</b>
-</pre>
+ExecStart=/home/feeladmin/feelcoin-pool/build/release/feelcoin-pool /home/feeladmin/feelcoin-pool/pool.conf
 
-Launching `monerod` like this instructs it to send the required signal,
-*SIGUSR1*, to the pool whenever a new block is added to the chain.
+Restart=always
+RestartSec=5
 
-Using this mechanism has a *significant* benefit - your pool *immediately* knows
-when to fetch a new block template to send to your miners. You're essentially
-giving your miners a head-start over miners in pools which use polling (which is
-what currently all the other pool implementations do).
+LimitNOFILE=65536
 
-### Interconnected pools
+[Install]
+WantedBy=multi-user.target
 
-In some situations it's desirable to run multiple pool instances that behave as
-one. Some examples being:
+Enable at boot:
 
- - When running a global public pool, it's desirable to offer extremely
-   low-latency pool connections to geographically dispersed miners.
- - When running a private pool across multiple data centers, it's desirable to
-   make use of the internal site-to-site network makeup.
- - Where there are multiple hosts available, it's desirable to offer extra
-   redundancy.
+sudo systemctl enable feelcoin-pool
 
-To meet these needs, multiple instances of the pool can be run with each
-behaving either as an edge pool, an upstream pool, both (i.e. bridged) or a
-normal single pool.
+Start:
 
-Any pool that has an upstream pool configured does almost everything a normal
-pool does, with the exception that it offloads payout processing to its upstream
-pool, thus it relays validated shares and blocks to the upstream pool. In
-return, the upstream pool sends the combined pools stats, balance updates and
-handles the payout processing.  Should an upstream become unreachable, the
-downstream pools continue as normal, then upon reconnection to the upstream,
-sends over the backlog of shares and blocks accumulated whilst the upstream was
-unreachable.
+sudo systemctl start feelcoin-pool
 
-Configuration is fairly trivial. A pool that will allow downstream pools to
-connect to it, does so via the config file parameters `trusted-listen`,
-`trusted-port` and `trusted-allowed`. E.g.
+Restart:
 
-    trusted-listen = 10.0.0.1
-    trusted-port = 4244
-    trusted-allowed = 10.0.0.2,10.0.0.3
+sudo systemctl restart feelcoin-pool
 
-As share validation is performed on the edge pools, it's ***vitally*** important
-this trusted listener is secured. Ideally it's only bound to an internal / local
-network / private interface and specifying the IP addresses of the downstream
-pools allowed to connect to it (as in the example above). If the interface being
-bound to is already secured, the parameter `trusted-allowed` can be omitted.
+Status:
 
-Then the downstream pools (`10.0.0.2` and `10.0.0.3` in the above example), need
-to include in their config files the parameters `upstream-host` and
-`upstream-port`. E.g.
+sudo systemctl status feelcoin-pool
+Web Dashboard
 
-    upstream-host = 10.0.0.1
-    upstream-port = 4244
+Feelcoin Pool includes a custom embedded web dashboard.
 
-To create a bridged pool, use all five parameters discussed above. For example:
+Frontend source:
 
-    trusted-listen = 10.0.0.4
-    trusted-port = 4244
-    trusted-allowed = 10.0.0.5,10.0.0.6
-    upstream-host = 10.0.0.1
-    upstream-port = 4244
+src/webui-embed.html
 
-An example where bridging can be useful is for spanning network providers, e.g.
-using a global provider for the main pool hubs (the bridges) and local providers
-for edge pools within a territory.
+The dashboard displays:
 
-Every pool, however configured, still needs RPC access to a Monero daemon.  They
-can of course all be configured to use the *same* daemon, or for extra
-redundancy, make use of separate daemons. Downstream pools do not need RPC
-access to the pool's wallet, only the final upstream needs wallet access. If
-Stratum mode self-select is being offered, the pool wallet view key can be set
-in the downstream pool config files via the `pool-view-key` parameter, or by
-running a local view-only wallet RPC.
+Pool hashrate
+Network hashrate
+Blockchain height
+Connected miners
+Pool fee
+Minimum payout
+Mining connection information
+XMRig setup instructions
+Miner statistics
+Miner balance
+Pool configuration
+FAQ
+Feelcoin Block Explorer link
 
-## Running
+The frontend is embedded directly into the pool executable.
 
-Ensure you have your Monero daemon (`monerod`) and wallet RPC
-(`monero-wallet-rpc`) up and running with the correct host and port settings as
-defined in your pool config file.
+After changing:
 
-It is highly recommended to run these on the same host as the pool server to
-avoid any network latency when their RPC methods are called.
+src/webui-embed.html
 
-Then simply `cd build/[debug|release]` and run `./monero-pool`.
+rebuild the pool:
 
-### Command-line parameters
+export MONERO_ROOT=/home/feeladmin/feelcoin
+make release
 
-A few of the configuration options can be overridden via the following
-command-line parameters:
+Then restart:
 
-    -c, --config-file <file>
-    -l, --log-file <file>
-    -b, --block-notified [0|1]
-    -d, --data-dir <dir>
-    -p, --pid-file <file>
-    -f, --forked [0|1]
+sudo systemctl restart feelcoin-pool
+Pool Statistics API
 
-## Web UI
+The web server exposes pool statistics through:
 
-This project is not designed to be a one-stop solution for running a public
-pool; it is an highly efficient mining pool implementation. For a public pool,
-which typically entails having a fancy web UI, that part is down to you. There
-is howeveer a minimal web UI that gets served on the port specified in the
-config file. If you plan on running a *public* pool via this UI (or any other
-for that matter), it's advisable to use either Apache or Nginx as a proxy in
-   front of this with some appropriate caching configured. The goal is to
-   offload browser based traffic to something built for the task and allow the
-   pool to focus on its primary function - serving miners.
+/stats
 
-If you intend to make changes to this minimal web UI, note that the HTML gets
-compiled into the pool binary. The single web page that gets served simply makes
-use of a JSON endpoint to populate the stats. Thus, a sensible option for your
-own web UI is to simply make use of that endpoint (for stats and balances), and
-keep your website completely separate, served by Apache or Nginx for example.
+Example:
 
-## SSL
+curl http://127.0.0.1:4243/stats
 
-The pool has been tested behind both [HAProxy](http://www.haproxy.org/) and
-[stunnel](https://www.stunnel.org/), so if you wish to provide SSL access to the
-pool, these are both good options and simple to setup. The [reference
-pool](https://monerop.com) makes use of HAProxy and port 4343 for SSL traffic.
+The dashboard uses this endpoint to retrieve live pool and miner information.
 
-The web UI, as mentioned above, should ideally be placed behind a *caching
-proxy*. Therefore SSL termination should be be configured there (i.e. in
-Apache/Nginx).
+Miner Dashboard
 
-## Help / Contact
+Miners can enter their Feelcoin wallet address in the web interface to retrieve pool statistics.
 
-If you need help setting up your own pool, you can find
-me (jtgrassie) on IRC in [#monero-pool](irc://chat.freenode.net/#monero-pool)
-and many of the other Monero channels.
+Depending on available pool data, the dashboard can display:
 
-## Supporting the project
+Miner hashrate
+Balance due
+Wallet identifier
+Pool connection status
+Feelcoin Block Explorer
 
-This mining pool has **no built-in developer donation** (like *other* mining
-pool software has), so if you use it and want to donate, XMR donations to:
+Feelcoin Pool integrates with the Feelcoin Block Explorer.
 
-```
-451ytzQg1vUVkuAW73VsQ72G96FUjASi4WNQse3v8ALfjiR5vLzGQ2hMUdYhG38Fi15eJ5FJ1ZL4EV1SFVi228muGX4f3SV
-```
+Live explorer:
 
-![QR code](./qr-small.png)
+http://162.35.27.43:8081
 
-would be very much appreciated.
+GitHub:
 
-## License
+https://github.com/feelcoin-dev/feelcoin-explorer
 
-Please see the [LICENSE](./LICENSE) file.
+The explorer currently provides:
 
-[//]: # ( vim: set tw=80: )
+Blockchain height
+Network difficulty
+Estimated network hashrate
+Latest blocks
+Block height search
+Block hash search
+Transaction hash search
+Mempool statistics
+Network connection information
+Network Ports
+
+Current Feelcoin service ports:
+
+Service	Port
+Feelcoin Daemon RPC	35781
+Feelcoin Wallet RPC	35784
+Mining Pool	4242
+Pool Dashboard	4243
+Block Explorer	8081
+Project Structure
+feelcoin-pool/
+├── src/
+│   ├── pool.c
+│   ├── webui.c
+│   ├── webui.h
+│   └── webui-embed.html
+│
+├── rxi/
+├── tools/
+├── build/
+│
+├── pool.conf
+├── Makefile
+├── LICENSE
+└── README.md
+Security
+
+For production deployment:
+
+Keep daemon RPC private
+Keep wallet RPC private
+Do not expose wallet RPC directly to the internet
+Do not commit wallet files
+Do not commit private keys
+Do not commit seed phrases
+Do not commit passwords
+Do not commit API credentials
+Use firewall rules
+Add HTTPS for public web services
+Add TLS for mining endpoints when available
+Keep the operating system updated
+Monitor pool and daemon logs
+Feelcoin Repositories
+Feelcoin Core
+https://github.com/feelcoin-dev/feelcoin
+Feelcoin Mining Pool
+https://github.com/feelcoin-dev/feelcoin-pool
+Feelcoin Block Explorer
+https://github.com/feelcoin-dev/feelcoin-explorer
+Feelcoin
+
+Feelcoin is an independent cryptocurrency project using RandomX Proof-of-Work.
+
+Project motto:
+
+In Feels We Trust
+
+<p align="center"> <img src="https://i.imgur.com/VPorAY4.jpeg" alt="Feelcoin" width="120"> </p>
+Upstream Attribution
+
+Feelcoin Mining Pool is derived from the open-source monero-pool project by jtgrassie and has been adapted for the Feelcoin network.
+
+Original upstream repository:
+
+https://github.com/jtgrassie/monero-pool
+
+The original project's copyright notices and licensing requirements remain applicable where required.
+
+License
+
+See the repository:
+
+LICENSE
+
+for licensing information.
+
+<p align="center"> <strong>Feelcoin Network</strong> </p> <p align="center"> <strong>In Feels We Trust</strong> </p> ```
