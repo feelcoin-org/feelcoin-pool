@@ -647,8 +647,7 @@ Pool Online
 
 — Mining is operational.
 
-Automatic payouts are currently disabled while the
-pool and network are being tested.
+Automatic payouts are enabled and being monitored during beta testing.
 
 </div>
 
@@ -1526,7 +1525,10 @@ function formatNumber(v){
     return n.toLocaleString();
 
 }
-
+function formatFeel(value){
+    const n = Number(value || 0);
+    return (n / 1_000_000_000_000).toFixed(12) + " FEEL";
+}
 
 
 function formatHashes(h){
@@ -1681,11 +1683,13 @@ function applyStats(stats){
 
     if(stats.payment_threshold !== undefined){
 
-        $("payment_threshold").textContent =
-            stats.payment_threshold;
+    $("payment_threshold").textContent =
+        stats.payment_threshold + " FEEL";
 
-        $("infoThreshold").textContent =
-            stats.payment_threshold;
+    $("infoThreshold").textContent =
+        stats.payment_threshold + " FEEL";
+
+}
 
     }
 
@@ -1717,17 +1721,15 @@ function applyStats(stats){
                 stats.miner_hashrate
             );
 
+if(stats.miner_balance !== undefined)
+    $("miner_balance").textContent =
+        formatFeel(
+            stats.miner_balance
+        );
 
-    if(stats.miner_balance !== undefined)
-        $("miner_balance").textContent =
-            formatNumber(
-                stats.miner_balance
-            );
 
-
-    $("poolStatus").textContent =
+   $("poolStatus").textContent =
         "Pool Online";
-
 
     document.querySelector(".dot")
         .style.background =
