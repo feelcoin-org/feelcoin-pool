@@ -477,4 +477,5 @@ LICENSE
 
 for licensing information.
 
-<p align="center"> <strong>Feelcoin Network</strong> </p> <p align="center"> <strong>In Feels We Trust</strong> </p> ```
+<p align="center"> <strong>Feelcoin Network</strong> </p> <p align="center"> <strong>In Feels We Trust</strong> </p> 
+
