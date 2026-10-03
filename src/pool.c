@@ -730,6 +730,105 @@ bail:
 }
 
 uint64_t
+account_total_paid(
+    const char *address,
+    uint64_t *last_payment,
+    uint64_t *last_payment_amount
+)
+{
+    int rc = 0;
+    char *err = NULL;
+    MDB_txn *txn = NULL;
+    MDB_cursor *cursor = NULL;
+    uint64_t total = 0;
+
+    if (last_payment)
+        *last_payment = 0;
+
+    if (last_payment_amount)
+        *last_payment_amount = 0;
+
+    if (!address || strlen(address) > ADDRESS_MAX)
+        return 0;
+
+    pthread_rwlock_rdlock(&rwlock_tx);
+
+    if ((rc = pdb_txn_begin(env, NULL, MDB_RDONLY, &txn)))
+    {
+        err = mdb_strerror(rc);
+        log_error("%s", err);
+        goto cleanup;
+    }
+
+    if ((rc = mdb_cursor_open(txn, db_payments, &cursor)))
+    {
+        err = mdb_strerror(rc);
+        log_error("%s", err);
+        goto cleanup;
+    }
+
+    MDB_val key = {ADDRESS_MAX, (void*)address};
+    MDB_val val;
+
+    rc = mdb_cursor_get(cursor, &key, &val, MDB_SET);
+
+    if (rc == MDB_NOTFOUND)
+        goto cleanup;
+
+    if (rc)
+    {
+        log_error("%s", mdb_strerror(rc));
+        goto cleanup;
+    }
+
+    do
+    {
+        if (val.mv_size == sizeof(payment_t))
+        {
+            const payment_t *payment =
+                (const payment_t*)val.mv_data;
+
+            total += payment->amount;
+
+            if (last_payment &&
+                (uint64_t)payment->timestamp > *last_payment)
+            {
+                *last_payment =
+                    (uint64_t)payment->timestamp;
+
+                if (last_payment_amount)
+                    *last_payment_amount =
+                        payment->amount;
+            }
+        }
+
+        rc = mdb_cursor_get(
+            cursor,
+            &key,
+            &val,
+            MDB_NEXT_DUP
+        );
+
+    } while (rc == 0);
+
+    if (rc != MDB_NOTFOUND)
+        log_error("%s", mdb_strerror(rc));
+
+cleanup:
+
+    if (cursor)
+        mdb_cursor_close(cursor);
+
+    if (txn)
+        mdb_txn_abort(txn);
+
+    pthread_rwlock_unlock(&rwlock_tx);
+
+    return total;
+}
+
+
+uint64_t
 account_balance(const char *address)
 {
     int rc = 0;

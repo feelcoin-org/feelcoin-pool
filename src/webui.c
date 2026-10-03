@@ -112,6 +112,9 @@ send_json_stats(struct evhttp_request *req, void *arg)
     unsigned ss = context->allow_self_select;
     double mh[6] = {0};
     double mb = 0.0;
+    double mtp = 0.0;
+    double mlpa = 0.0;
+    uint64_t mlp = 0;
     uint64_t wc = 0;
     const char *wa = fetch_wa_cookie(req);
 
@@ -121,6 +124,23 @@ send_json_stats(struct evhttp_request *req, void *arg)
         wc = worker_count(wa);
         uint64_t balance = account_balance(wa);
         mb = (double) balance / 1000000000000.0;
+
+        uint64_t last_payment_amount = 0;
+
+        uint64_t total_paid =
+            account_total_paid(
+                wa,
+                &mlp,
+                &last_payment_amount
+            );
+
+        mtp =
+            (double) total_paid /
+            1000000000000.0;
+
+        mlpa =
+            (double) last_payment_amount /
+            1000000000000.0;
     }
 
     evbuffer_add_printf(buf, "{"
@@ -142,7 +162,10 @@ send_json_stats(struct evhttp_request *req, void *arg)
             "\"miner_hashrate_stats\":["
                     "%"PRIu64",%"PRIu64",%"PRIu64","
                     "%"PRIu64",%"PRIu64",%"PRIu64"],"
-            "\"miner_balance\":%.8f,"
+            "\"miner_balance\":%.12f,"
+            "\"miner_total_paid\":%.12f,"
+            "\"miner_last_payment\":%"PRIu64","
+            "\"miner_last_payment_amount\":%.12f,"
             "\"worker_count\": %"PRIu64
             "}", ph, rh, nh, nd, height, ltf, lbf, pbf,
             context->payment_threshold, context->pool_fee,
@@ -150,7 +173,8 @@ send_json_stats(struct evhttp_request *req, void *arg)
             ss, context->pool_stats->connected_accounts,
             (uint64_t)mh[0],
             (uint64_t)mh[0], (uint64_t)mh[1], (uint64_t)mh[2],
-            (uint64_t)mh[3], (uint64_t)mh[4], (uint64_t)mh[5], mb, wc);
+            (uint64_t)mh[3], (uint64_t)mh[4], (uint64_t)mh[5],
+            mb, mtp, mlp, mlpa, wc);
     hdrs_out = evhttp_request_get_output_headers(req);
     evhttp_add_header(hdrs_out, "Content-Type", "application/json");
     evhttp_send_reply(req, HTTP_OK, "OK", buf);

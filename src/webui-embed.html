@@ -1259,6 +1259,38 @@ id="miner_balance">
 <div class="info-box">
 
 <div class="label">
+Total Paid
+</div>
+
+<strong
+id="miner_total_paid">
+
+—
+
+</strong>
+
+</div>
+
+
+<div class="info-box">
+
+<div class="label">
+Last Payment
+</div>
+
+<strong
+id="miner_last_payment">
+
+—
+
+</strong>
+
+</div>
+
+
+<div class="info-box">
+
+<div class="label">
 Wallet
 </div>
 
@@ -1523,7 +1555,7 @@ function formatNumber(v){
 }
 function formatFeel(value){
     const n = Number(value || 0);
-    return (n / 1_000_000_000_000).toFixed(12) + " FEEL";
+    return n.toFixed(12) + " FEEL";
 }
 
 
@@ -1720,6 +1752,45 @@ if(stats.miner_balance !== undefined)
         formatFeel(
             stats.miner_balance
         );
+
+
+if(stats.miner_total_paid !== undefined)
+    $("miner_total_paid").textContent =
+        formatFeel(
+            stats.miner_total_paid
+        );
+
+
+if(stats.miner_last_payment !== undefined){
+
+    const ts =
+        Number(
+            stats.miner_last_payment
+        );
+
+    if(ts > 0){
+
+        const amount =
+            Number(
+                stats.miner_last_payment_amount || 0
+            );
+
+        $("miner_last_payment").innerHTML =
+            amount.toFixed(12) +
+            " FEEL<br>" +
+            new Date(
+                ts * 1000
+            ).toLocaleString();
+
+    }
+    else{
+
+        $("miner_last_payment").textContent =
+            "No payments yet";
+
+    }
+
+}
 
 
    $("poolStatus").textContent =
