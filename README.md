@@ -1,4 +1,25 @@
 <p align="center">
+
+<!-- FEELCOIN-OFFICIAL-LINKS:START -->
+## Official Feelcoin Ecosystem
+
+| Service | Official address |
+|---|---|
+| Website | https://feelcoin.org |
+| Mining Pool | https://pool.feelcoin.org |
+| Block Explorer | https://explorer.feelcoin.org |
+| Non-Custodial Web Wallet | https://wallet.feelcoin.org |
+| Paper Wallet | https://paper.feelcoin.org |
+
+### Mining endpoints
+
+Standard mining: `pool.feelcoin.org:4242`
+
+TLS mining: `pool.feelcoin.org:4244`
+
+`feelcoin.org` is the canonical public domain for the Feelcoin ecosystem.
+<!-- FEELCOIN-OFFICIAL-LINKS:END -->
+
   <img src="https://i.imgur.com/VPorAY4.jpeg" alt="Feelcoin Logo" width="170">
 </p>
 
@@ -62,7 +83,7 @@ Live Feelcoin Services
 
 Mining Pool
 
-pool.feelcoin.online:4242
+pool.feelcoin.org:4242
 
 Pool Dashboard
 
@@ -70,7 +91,7 @@ http://162.35.27.43:4243
 
 Block Explorer
 
-https://explorer.feelcoin.online
+https://explorer.feelcoin.org
 
 Start Mining
 
@@ -88,11 +109,11 @@ Username: your Feelcoin wallet address
 
 Password: x
 
-TLS/SSL: enabled on pool.feelcoin.online:4244
+TLS/SSL: enabled on pool.feelcoin.org:4244
 
 XMRig Quick Start
 
-xmrig -o pool.feelcoin.online:4242 -u YOUR_FEELCOIN_WALLET_ADDRESS -p x
+xmrig -o pool.feelcoin.org:4242 -u YOUR_FEELCOIN_WALLET_ADDRESS -p x
 
 Replace YOUR_FEELCOIN_WALLET_ADDRESS with your own Feelcoin wallet address.
 
@@ -109,7 +130,7 @@ XMRig Configuration Example
   "cuda": false,
   "pools": [
     {
-      "url": "pool.feelcoin.online:4242",
+      "url": "pool.feelcoin.org:4242",
       "user": "YOUR_FEELCOIN_WALLET_ADDRESS",
       "pass": "x",
       "keepalive": true
@@ -177,15 +198,15 @@ Enabled
 
 Standard endpoint:
 
-pool.feelcoin.online:4242
+pool.feelcoin.org:4242
 
 Secure TLS endpoint:
 
-pool.feelcoin.online:4244
+pool.feelcoin.org:4244
 
 XMRig TLS:
 
-xmrig -o pool.feelcoin.online:4244 -u YOUR_FEELCOIN_WALLET_ADDRESS -p x --tls
+xmrig -o pool.feelcoin.org:4244 -u YOUR_FEELCOIN_WALLET_ADDRESS -p x --tls
 
 Self Select
 
@@ -444,7 +465,7 @@ Feelcoin Block Explorer
 
 Feelcoin Pool integrates with the Feelcoin Block Explorer.
 
-Live explorer: https://explorer.feelcoin.online
+Live explorer: https://explorer.feelcoin.org
 
 GitHub: https://github.com/feelcoin-org/feelcoin-explorer
 
@@ -534,7 +555,7 @@ use firewall rules
 
 add HTTPS for public web services
 
-TLS mining available on pool.feelcoin.online:4244
+TLS mining available on pool.feelcoin.org:4244
 
 keep the operating system updated
 
@@ -591,11 +612,11 @@ See the repository LICENSE file for licensing information.
 
 Web Wallet:
 
-https://wallet.feelcoin.online
+https://wallet.feelcoin.org
 
 Paper Wallet:
 
-https://paper.feelcoin.online
+https://paper.feelcoin.org
 
 The web services are published through HTTPS and their application
 backends listen only on localhost.

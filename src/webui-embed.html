@@ -528,7 +528,7 @@ footer{
     }
 
     .nav{
-        display:none;
+        display:flex;
     }
 }
 
@@ -1107,6 +1107,45 @@ body {
 }
 
 
+
+/* ===== FEELCOIN RESPONSIVE NAV FIX ===== */
+@media (max-width: 950px) {
+    .topbar {
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .nav {
+        display: flex !important;
+        flex-wrap: wrap;
+        width: 100%;
+        order: 3;
+        gap: 6px;
+    }
+
+    .nav a {
+        flex: 1 1 auto;
+        text-align: center;
+        white-space: nowrap;
+        padding: 9px 10px;
+        font-size: 13px;
+        background: rgba(20,31,50,.55);
+        border: 1px solid rgba(255,255,255,.06);
+    }
+
+    .status {
+        margin-left: auto;
+    }
+}
+
+@media (max-width: 520px) {
+    .nav a {
+        flex: 1 1 calc(50% - 6px);
+        font-size: 12px;
+        padding: 9px 7px;
+    }
+}
+
 </style>
 
 <link rel="icon" type="image/webp" href="/assets/feelcoin-coin.webp">
@@ -1151,19 +1190,19 @@ alt="Feelcoin Logo">
 
 <a href="#faq">FAQ</a>
 
-<a href="https://explorer.feelcoin.online"
+<a href="https://explorer.feelcoin.org"
 target="_blank"
 rel="noopener noreferrer">
 Explorer
 </a>
 
-<a href="https://wallet.feelcoin.online"
+<a href="https://wallet.feelcoin.org"
 target="_blank"
 rel="noopener noreferrer">
 Web Wallet
 </a>
 
-<a href="https://paper.feelcoin.online"
+<a href="https://paper.feelcoin.org"
 target="_blank"
 rel="noopener noreferrer">
 Paper Wallet
@@ -1281,7 +1320,7 @@ Pool Address
 
 <div class="value">
 
-pool.feelcoin.online:<span id="pool_port">4242</span>
+pool.feelcoin.org:<span id="pool_port">4242</span>
 
 </div>
 
@@ -1483,7 +1522,7 @@ Standard Mining
 </div>
 
 <strong>
-pool.feelcoin.online:4242
+pool.feelcoin.org:4242
 </strong>
 
 <div class="endpoint-note">
@@ -1500,7 +1539,7 @@ Secure Mining
 </div>
 
 <strong>
-pool.feelcoin.online:4244
+pool.feelcoin.org:4244
 </strong>
 
 <div class="endpoint-note secure">
@@ -1580,7 +1619,7 @@ XMRig Quick Command
       </button>
     </div>
 
-    <pre id="xmrigCommand">xmrig -o pool.feelcoin.online:4242 -u YOUR_FEELCOIN_WALLET_ADDRESS -p x</pre>
+    <pre id="xmrigCommand">xmrig -o pool.feelcoin.org:4242 -u YOUR_FEELCOIN_WALLET_ADDRESS -p x</pre>
 
   </div>
 
@@ -1605,7 +1644,7 @@ XMRig Quick Command
       </button>
     </div>
 
-    <pre id="xmrigTlsCommand">xmrig -o pool.feelcoin.online:4244 -u YOUR_FEELCOIN_WALLET_ADDRESS -p x --tls</pre>
+    <pre id="xmrigTlsCommand">xmrig -o pool.feelcoin.org:4244 -u YOUR_FEELCOIN_WALLET_ADDRESS -p x --tls</pre>
 
   </div>
 
@@ -1642,7 +1681,7 @@ Copy
 
   "pools": [
     {
-      "url": "pool.feelcoin.online:4242",
+      "url": "pool.feelcoin.org:4242",
       "user": "YOUR_FEELCOIN_WALLET_ADDRESS",
       "pass": "x",
       "keepalive": true
@@ -1778,7 +1817,7 @@ Enabled
 </strong>
 
 <div class="endpoint-note secure">
-pool.feelcoin.online:4244
+pool.feelcoin.org:4244
 </div>
 
 </div>
@@ -1981,7 +2020,7 @@ Use a RandomX-compatible miner such as XMRig.
 Connect to
 
 <strong>
-pool.feelcoin.online:4242
+pool.feelcoin.org:4242
 </strong>
 
 and use your Feelcoin wallet address as
@@ -2097,14 +2136,14 @@ Does the pool support TLS?
 
 <p>
 Yes. Secure mining is available at
-<strong>pool.feelcoin.online:4244</strong>
+<strong>pool.feelcoin.org:4244</strong>
 using TLS 1.2 or TLS 1.3.
 
 For XMRig, enable TLS with
 <strong>--tls</strong>.
 
 The standard
-<strong>pool.feelcoin.online:4242</strong>
+<strong>pool.feelcoin.org:4242</strong>
 endpoint remains available for miners that do not use TLS.
 </p>
 
