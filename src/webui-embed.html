@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#070b14">
 
-<title>Feelcoin Mining Pool</title>
+<title>Feelcoin Mining Pool | RandomX CPU Mining</title>
 
 <style>
 :root{
@@ -76,8 +76,8 @@ input{
 /* HEADER */
 
 .topbar{
-    position:sticky;
-    top:12px;
+    position:static;
+    top:auto;
     z-index:50;
 
     display:flex;
@@ -1151,6 +1151,287 @@ body {
 <link rel="icon" type="image/webp" href="/assets/feelcoin-coin.webp">
 <link rel="apple-touch-icon" href="/assets/feelcoin-coin.webp">
 
+
+<!-- FEELCOIN POOL SEO START -->
+
+<meta name="description"
+content="Official Feelcoin mining pool for RandomX CPU mining with PPLNS rewards, automatic payouts, miner statistics, standard mining and TLS connectivity.">
+
+<meta name="keywords"
+content="Feelcoin, FEEL, cryptocurrency, blockchain, RandomX, Proof of Work, CPU mining, crypto wallet, mining pool, blockchain explorer, non-custodial wallet, open source cryptocurrency">
+
+<meta name="robots"
+content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1">
+
+<meta name="author" content="feelcoin-dev">
+
+<link rel="canonical" href="https://pool.feelcoin.org/">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Feelcoin">
+<meta property="og:title" content="Feelcoin Mining Pool | RandomX CPU Mining">
+<meta property="og:description" content="Official Feelcoin mining pool for RandomX CPU mining with PPLNS rewards, automatic payouts, miner statistics, standard mining and TLS connectivity.">
+<meta property="og:url" content="https://pool.feelcoin.org/">
+<meta property="og:image" content="https://feelcoin.org/assets/feelcoin-coin.webp">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@feelcoin_org">
+<meta name="twitter:title" content="Feelcoin Mining Pool | RandomX CPU Mining">
+<meta name="twitter:description" content="Official Feelcoin mining pool for RandomX CPU mining with PPLNS rewards, automatic payouts, miner statistics, standard mining and TLS connectivity.">
+<meta name="twitter:image" content="https://feelcoin.org/assets/feelcoin-coin.webp">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "Feelcoin Mining Pool",
+  "url": "https://pool.feelcoin.org/",
+  "description": "Official Feelcoin mining pool for RandomX CPU mining with PPLNS rewards, automatic payouts, miner statistics, standard mining and TLS connectivity.",
+  "isPartOf": {
+    "@type": "WebSite",
+    "name": "Feelcoin",
+    "url": "https://feelcoin.org/"
+  },
+  "sameAs": [
+    "https://github.com/feelcoin-org",
+    "https://x.com/feelcoin_org",
+    "https://discord.com/invite/2sx7Q8yAR"
+  ]
+}
+</script>
+
+<!-- FEELCOIN POOL SEO END -->
+
+
+<style id="feel-network-status-style">
+
+.feel-network-status{
+    margin:18px 0 28px;
+    padding:0;
+}
+
+.feel-network-status-card{
+    position:relative;
+    overflow:hidden;
+    padding:18px 20px;
+    border:1px solid rgba(255,255,255,.08);
+    border-radius:16px;
+    background:
+        radial-gradient(circle at top right,
+            rgba(220,174,74,.10),
+            transparent 38%),
+        rgba(255,255,255,.025);
+}
+
+.feel-network-status-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+    margin-bottom:15px;
+}
+
+.feel-network-status-title{
+    display:flex;
+    align-items:center;
+    gap:9px;
+    font-size:.92rem;
+    font-weight:700;
+    letter-spacing:.07em;
+    text-transform:uppercase;
+}
+
+.feel-network-master-dot,
+.feel-network-node-dot{
+    display:inline-block;
+    width:9px;
+    height:9px;
+    border-radius:50%;
+    background:#8b8b8b;
+    box-shadow:0 0 0 3px rgba(139,139,139,.10);
+}
+
+.feel-network-master-dot.online,
+.feel-network-node-dot.online{
+    background:#38d996;
+    box-shadow:0 0 0 3px rgba(56,217,150,.12),
+               0 0 12px rgba(56,217,150,.28);
+}
+
+.feel-network-master-dot.warning,
+.feel-network-node-dot.warning{
+    background:#e0aa42;
+    box-shadow:0 0 0 3px rgba(224,170,66,.12);
+}
+
+.feel-network-status-time{
+    font-size:.76rem;
+    opacity:.62;
+    white-space:nowrap;
+}
+
+.feel-network-grid{
+    display:grid;
+    grid-template-columns:repeat(6,minmax(0,1fr));
+    gap:10px;
+}
+
+.feel-network-item{
+    min-width:0;
+    padding:12px 13px;
+    border-radius:12px;
+    background:rgba(255,255,255,.025);
+    border:1px solid rgba(255,255,255,.055);
+}
+
+.feel-network-label{
+    margin-bottom:5px;
+    font-size:.68rem;
+    text-transform:uppercase;
+    letter-spacing:.075em;
+    opacity:.56;
+}
+
+.feel-network-value{
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+    font-size:.96rem;
+    font-weight:700;
+}
+
+.feel-network-node-value{
+    display:flex;
+    align-items:center;
+    gap:7px;
+}
+
+.feel-network-sub{
+    margin-top:4px;
+    font-size:.68rem;
+    opacity:.48;
+}
+
+@media (max-width:1000px){
+    .feel-network-grid{
+        grid-template-columns:repeat(3,minmax(0,1fr));
+    }
+}
+
+@media (max-width:620px){
+    .feel-network-status-card{
+        padding:16px;
+    }
+
+    .feel-network-status-head{
+        align-items:flex-start;
+        flex-direction:column;
+        gap:5px;
+    }
+
+    .feel-network-grid{
+        grid-template-columns:repeat(2,minmax(0,1fr));
+    }
+}
+
+</style>
+
+
+
+<style id="feelcoin-pool-full-glass-theme">
+
+/* ===== FEELCOIN POOL FULL GLASS THEME ===== */
+
+.topbar{
+  background:rgba(13,20,34,.72) !important;
+  border:1px solid rgba(255,255,255,.08) !important;
+
+  backdrop-filter:blur(16px) saturate(115%) !important;
+  -webkit-backdrop-filter:blur(16px) saturate(115%) !important;
+
+  box-shadow:
+    0 10px 35px rgba(0,0,0,.18),
+    inset 0 1px 0 rgba(255,255,255,.035);
+}
+
+.beta{
+  background:rgba(13,20,34,.56) !important;
+  border:1px solid rgba(255,255,255,.07) !important;
+
+  backdrop-filter:blur(10px) !important;
+  -webkit-backdrop-filter:blur(10px) !important;
+}
+
+.card{
+  background:
+    linear-gradient(
+      180deg,
+      rgba(17,26,43,.68),
+      rgba(10,17,30,.62)
+    ) !important;
+
+  border:1px solid rgba(255,255,255,.075) !important;
+
+  backdrop-filter:blur(14px) saturate(110%) !important;
+  -webkit-backdrop-filter:blur(14px) saturate(110%) !important;
+
+  box-shadow:
+    0 10px 30px rgba(0,0,0,.16),
+    inset 0 1px 0 rgba(255,255,255,.025);
+}
+
+.hero-main,
+.quick,
+.metric,
+.pool-card,
+.minerstats{
+  background:
+    linear-gradient(
+      180deg,
+      rgba(17,26,43,.64),
+      rgba(10,17,30,.58)
+    ) !important;
+}
+
+.info-line,
+.feel-network-item{
+  background:rgba(8,16,29,.52) !important;
+  border-color:rgba(255,255,255,.055) !important;
+
+  backdrop-filter:blur(8px) !important;
+  -webkit-backdrop-filter:blur(8px) !important;
+}
+
+.feel-network-status-card{
+  background:
+    linear-gradient(
+      180deg,
+      rgba(17,26,43,.68),
+      rgba(10,17,30,.62)
+    ) !important;
+
+  border:1px solid rgba(255,255,255,.075) !important;
+
+  backdrop-filter:blur(14px) saturate(110%) !important;
+  -webkit-backdrop-filter:blur(14px) saturate(110%) !important;
+}
+
+pre,
+code{
+  background:rgba(5,10,18,.56) !important;
+}
+
+footer{
+  background:rgba(8,14,24,.34) !important;
+
+  backdrop-filter:blur(10px) !important;
+  -webkit-backdrop-filter:blur(10px) !important;
+}
+
+/* ===== END FEELCOIN POOL FULL GLASS THEME ===== */
+
+</style>
+
 </head>
 
 
@@ -1466,6 +1747,72 @@ Active miners
 
 
 </section>
+
+<section class="feel-network-status" id="feelNetworkStatus">
+
+<div class="feel-network-status-card">
+
+<div class="feel-network-status-head">
+
+<div class="feel-network-status-title">
+<span class="feel-network-master-dot" id="feelNetworkMasterDot"></span>
+<span>Live Network</span>
+</div>
+
+<div class="feel-network-status-time" id="feelNetworkUpdated">
+Waiting for network data...
+</div>
+
+</div>
+
+<div class="feel-network-grid">
+
+<div class="feel-network-item">
+<div class="feel-network-label">Network Height</div>
+<div class="feel-network-value" id="feelNetworkHeight">—</div>
+<div class="feel-network-sub">Current mainnet tip</div>
+</div>
+
+<div class="feel-network-item">
+<div class="feel-network-label">Difficulty</div>
+<div class="feel-network-value" id="feelNetworkDifficulty">—</div>
+<div class="feel-network-sub">Current network difficulty</div>
+</div>
+
+<div class="feel-network-item">
+<div class="feel-network-label">Block Target</div>
+<div class="feel-network-value" id="feelNetworkTarget">120s</div>
+<div class="feel-network-sub">Protocol target</div>
+</div>
+
+<div class="feel-network-item">
+<div class="feel-network-label">Node 1</div>
+<div class="feel-network-value feel-network-node-value">
+<span class="feel-network-node-dot" id="feelNode1Dot"></span>
+<span id="feelNode1Status">Checking</span>
+</div>
+<div class="feel-network-sub" id="feelNode1Height">node1.feelcoin.org</div>
+</div>
+
+<div class="feel-network-item">
+<div class="feel-network-label">Node 2</div>
+<div class="feel-network-value feel-network-node-value">
+<span class="feel-network-node-dot" id="feelNode2Dot"></span>
+<span id="feelNode2Status">Checking</span>
+</div>
+<div class="feel-network-sub" id="feelNode2Height">node2.feelcoin.org</div>
+</div>
+
+<div class="feel-network-item">
+<div class="feel-network-label">Network</div>
+<div class="feel-network-value" id="feelNetworkSync">Checking</div>
+<div class="feel-network-sub">Node synchronization</div>
+</div>
+
+</div>
+</div>
+</section>
+
 
 
 
@@ -2692,5 +3039,239 @@ function showExplorer(){
 
 </script>
 
+
+<script id="feel-network-status-script">
+
+(function(){
+
+    const $n = id => document.getElementById(id);
+
+    function setNode(name, node){
+
+        const dot =
+            $n("feel" + name + "Dot");
+
+        const status =
+            $n("feel" + name + "Status");
+
+        const detail =
+            $n("feel" + name + "Height");
+
+        if(!dot || !status || !detail)
+            return;
+
+        dot.classList.remove("online","warning");
+
+        if(node && node.online){
+
+            dot.classList.add("online");
+            status.textContent =
+                node.synchronized === false
+                    ? "Syncing"
+                    : "Online";
+
+            detail.textContent =
+                node.height !== undefined
+                    ? "Height " +
+                      Number(node.height).toLocaleString()
+                    : (node.host || "Online");
+
+        }
+        else{
+
+            dot.classList.add("warning");
+            status.textContent = "Offline";
+
+            detail.textContent =
+                node && node.host
+                    ? node.host
+                    : "Unavailable";
+
+        }
+
+    }
+
+
+    async function refreshFeelNetworkStatus(){
+
+        const masterDot =
+            $n("feelNetworkMasterDot");
+
+        try{
+
+            const response =
+                await fetch(
+                    "/network-status.json",
+                    { cache:"no-store" }
+                );
+
+            if(!response.ok)
+                throw new Error(
+                    "HTTP " + response.status
+                );
+
+            const data =
+                await response.json();
+
+            const network =
+                data.network || {};
+
+            const nodes =
+                data.nodes || {};
+
+            if($n("feelNetworkHeight"))
+                $n("feelNetworkHeight").textContent =
+                    network.height !== undefined
+                        ? Number(network.height)
+                            .toLocaleString()
+                        : "—";
+
+            if($n("feelNetworkDifficulty"))
+                $n("feelNetworkDifficulty").textContent =
+                    network.difficulty !== undefined
+                        ? Number(network.difficulty)
+                            .toLocaleString()
+                        : "—";
+
+            if($n("feelNetworkTarget"))
+                $n("feelNetworkTarget").textContent =
+                    network.target_seconds !== undefined
+                        ? network.target_seconds + "s"
+                        : "120s";
+
+            setNode("Node1", nodes.node1);
+            setNode("Node2", nodes.node2);
+
+            const bothOnline =
+                nodes.node1 &&
+                nodes.node1.online &&
+                nodes.node2 &&
+                nodes.node2.online;
+
+            const synced =
+                network.synchronized !== false &&
+                (!nodes.node1 ||
+                    nodes.node1.synchronized !== false) &&
+                (!nodes.node2 ||
+                    nodes.node2.synchronized !== false);
+
+            if($n("feelNetworkSync"))
+                $n("feelNetworkSync").textContent =
+                    bothOnline && synced
+                        ? "Operational"
+                        : synced
+                            ? "Operational"
+                            : "Syncing";
+
+            if(masterDot){
+
+                masterDot.classList
+                    .remove("online","warning");
+
+                masterDot.classList.add(
+                    bothOnline && synced
+                        ? "online"
+                        : "warning"
+                );
+
+            }
+
+            if($n("feelNetworkUpdated")){
+
+                if(data.updated_at){
+
+                    const updated =
+                        new Date(data.updated_at);
+
+                    const age =
+                        Date.now() -
+                        updated.getTime();
+
+                    if(age > 120000){
+
+                        $n("feelNetworkUpdated")
+                            .textContent =
+                            "Status delayed · " +
+                            updated.toLocaleTimeString();
+
+                        if(masterDot){
+
+                            masterDot.classList
+                                .remove("online");
+
+                            masterDot.classList
+                                .add("warning");
+
+                        }
+
+                    }
+                    else{
+
+                        $n("feelNetworkUpdated")
+                            .textContent =
+                            "Updated " +
+                            updated.toLocaleTimeString();
+
+                    }
+
+                }
+                else{
+
+                    $n("feelNetworkUpdated")
+                        .textContent =
+                        "Live status";
+
+                }
+
+            }
+
+        }
+        catch(error){
+
+            if(masterDot){
+
+                masterDot.classList
+                    .remove("online");
+
+                masterDot.classList
+                    .add("warning");
+
+            }
+
+            if($n("feelNetworkSync"))
+                $n("feelNetworkSync").textContent =
+                    "Unavailable";
+
+            if($n("feelNetworkUpdated"))
+                $n("feelNetworkUpdated").textContent =
+                    "Network status unavailable";
+
+            console.warn(
+                "Feelcoin network status:",
+                error
+            );
+
+        }
+
+    }
+
+
+    refreshFeelNetworkStatus();
+
+    setInterval(
+        refreshFeelNetworkStatus,
+        30000
+    );
+
+})();
+
+</script>
+
 </body>
 </html>
+
+<style>
+#updated{
+    display:none !important;
+}
+</style>
