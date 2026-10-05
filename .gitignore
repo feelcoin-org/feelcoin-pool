@@ -1,8 +1,31 @@
-build
 
-
-# Feelcoin development files
-*.log
+*~
 *.backup
-*.before-feelcoin
+*.backup-*
+*.bak
+*.before-*
+*before-*
 *.before-boost-link-fix
+*.before-feelcoin
+build
+build/
+cmake-build-*/
+data/
+# Development snapshots/backups
+.env
+.env.*
+# Feelcoin development files
+# Feelcoin local production/runtime configuration
+# Feelcoin pool local/runtime files
+*.keys
+# Local build output
+*.log
+*.old
+*.p12
+*.pem
+*.pfx
+*.pid
+pool.conf
+pool-data/
+*.wallet
+wallets/

@@ -3613,17 +3613,6 @@ post_hash:
     BN_free(rh);
 
     /* Process share */
-    account_t *account = NULL;
-    pthread_rwlock_rdlock(&rwlock_acc);
-    HASH_FIND_STR(accounts, client->address, account);
-    client->hashes += job->target;
-    client->hr_stats.diff_since += job->target;
-    account->hashes += job->target;
-    account->hr_stats.diff_since += job->target;
-    hr_update(&client->hr_stats);
-    /* TODO: account hr should be called less freq */
-    hr_update(&account->hr_stats);
-    pthread_rwlock_unlock(&rwlock_acc);
     time_t now = time(NULL);
     bool can_store = true;
     log_trace("Checking hash against block difficulty: "
@@ -3700,6 +3689,27 @@ post_hash:
 
     if (can_store)
     {
+        /*
+         * Only accepted shares contribute to hashrate statistics.
+         * Low-difficulty shares must not inflate miner/account/pool HR.
+         */
+        account_t *account = NULL;
+        pthread_rwlock_rdlock(&rwlock_acc);
+        HASH_FIND_STR(accounts, client->address, account);
+
+        client->hashes += job->target;
+        client->hr_stats.diff_since += job->target;
+        hr_update(&client->hr_stats);
+
+        if (account)
+        {
+            account->hashes += job->target;
+            account->hr_stats.diff_since += job->target;
+            hr_update(&account->hr_stats);
+        }
+
+        pthread_rwlock_unlock(&rwlock_acc);
+
         int rc = 0;
         if (client->bad_shares)
             client->bad_shares--;
