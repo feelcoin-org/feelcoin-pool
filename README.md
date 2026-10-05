@@ -620,3 +620,9 @@ https://paper.feelcoin.org
 
 The web services are published through HTTPS and their application
 backends listen only on localhost.
+
+## Contact
+
+Official Feelcoin support and project contact:
+
+**support@feelcoin.org**
