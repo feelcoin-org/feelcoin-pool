@@ -717,6 +717,135 @@ store_block(uint64_t height, block_t *block)
 }
 
 void
+pool_recent_blocks_json(
+        char *list_start,
+        char *list_end,
+        uint64_t current_height,
+        unsigned limit)
+{
+    int rc = 0;
+    MDB_txn *txn = NULL;
+    MDB_cursor *cursor = NULL;
+    MDB_val key;
+    MDB_val val;
+    unsigned count = 0;
+    char *out = list_start;
+
+    if (!list_start || !list_end || list_start >= list_end)
+        return;
+
+    *out = '\0';
+
+    if (limit == 0)
+        return;
+
+    if (limit > 100)
+        limit = 100;
+
+    pthread_rwlock_rdlock(&rwlock_tx);
+
+    rc = pdb_txn_begin(
+        env,
+        NULL,
+        MDB_RDONLY,
+        &txn
+    );
+
+    if (rc)
+        goto cleanup;
+
+    rc = mdb_cursor_open(
+        txn,
+        db_blocks,
+        &cursor
+    );
+
+    if (rc)
+        goto cleanup;
+
+    rc = mdb_cursor_get(
+        cursor,
+        &key,
+        &val,
+        MDB_LAST
+    );
+
+    while (rc == 0 && count < limit)
+    {
+        if (val.mv_size == sizeof(block_t))
+        {
+            const block_t *block =
+                (const block_t*)val.mv_data;
+
+            const char *status = "pending";
+
+            if (block->status & BLOCK_ORPHANED)
+                status = "orphaned";
+            else if (block->status & BLOCK_UNLOCKED)
+                status = "confirmed";
+
+            uint64_t confirmations = 0;
+
+            if (current_height > block->height)
+                confirmations =
+                    current_height - block->height;
+
+            char hash[65];
+            memcpy(hash, block->hash, 64);
+            hash[64] = '\0';
+
+            int written = snprintf(
+                out,
+                (size_t)(list_end - out),
+                "%s{"
+                "\"height\":%"PRIu64","
+                "\"hash\":\"%s\","
+                "\"difficulty\":%"PRIu64","
+                "\"reward\":%"PRIu64","
+                "\"timestamp\":%"PRIu64","
+                "\"status\":\"%s\","
+                "\"confirmations\":%"PRIu64","
+                "\"required_confirmations\":60"
+                "}",
+                count ? "," : "",
+                block->height,
+                hash,
+                block->difficulty,
+                block->reward,
+                (uint64_t)block->timestamp,
+                status,
+                confirmations
+            );
+
+            if (written < 0 ||
+                out + written >= list_end)
+                break;
+
+            out += written;
+            count++;
+        }
+
+        rc = mdb_cursor_get(
+            cursor,
+            &key,
+            &val,
+            MDB_PREV
+        );
+    }
+
+cleanup:
+
+    if (cursor)
+        mdb_cursor_close(cursor);
+
+    if (txn)
+        mdb_txn_abort(txn);
+
+    pthread_rwlock_unlock(&rwlock_tx);
+}
+
+
+void
 account_hr(double *avg, const char *address)
 {
     account_t *account = NULL;
@@ -728,6 +857,368 @@ account_hr(double *avg, const char *address)
 bail:
     pthread_rwlock_unlock(&rwlock_acc);
 }
+
+typedef struct recent_payment_view_t
+{
+    uint64_t amount;
+    time_t timestamp;
+    char address[ADDRESS_MAX];
+} recent_payment_view_t;
+
+
+static void
+insert_recent_payment(
+        recent_payment_view_t *items,
+        unsigned *count,
+        unsigned limit,
+        const payment_t *payment)
+{
+    unsigned pos = 0;
+
+    if (!items || !count || !payment || limit == 0)
+        return;
+
+    while (
+        pos < *count &&
+        items[pos].timestamp >= payment->timestamp
+    )
+        pos++;
+
+    if (*count < limit)
+        (*count)++;
+
+    if (pos >= limit)
+        return;
+
+    for (unsigned i = *count - 1; i > pos; i--)
+        items[i] = items[i - 1];
+
+    items[pos].amount =
+        payment->amount;
+
+    items[pos].timestamp =
+        payment->timestamp;
+
+    memcpy(
+        items[pos].address,
+        payment->address,
+        ADDRESS_MAX
+    );
+}
+
+
+void
+pool_recent_payments_json(
+        char *list_start,
+        char *list_end,
+        unsigned limit)
+{
+    int rc = 0;
+
+    MDB_txn *txn = NULL;
+    MDB_cursor *cursor = NULL;
+    MDB_val key;
+    MDB_val val;
+
+    char *out = list_start;
+
+    if (
+        !list_start ||
+        !list_end ||
+        list_start >= list_end
+    )
+        return;
+
+    *out = '\0';
+
+    if (limit == 0)
+        return;
+
+    if (limit > 50)
+        limit = 50;
+
+    recent_payment_view_t items[50];
+
+    memset(
+        items,
+        0,
+        sizeof(items)
+    );
+
+    unsigned count = 0;
+
+    pthread_rwlock_rdlock(
+        &rwlock_tx
+    );
+
+    rc = pdb_txn_begin(
+        env,
+        NULL,
+        MDB_RDONLY,
+        &txn
+    );
+
+    if (rc)
+        goto cleanup;
+
+    rc = mdb_cursor_open(
+        txn,
+        db_payments,
+        &cursor
+    );
+
+    if (rc)
+        goto cleanup;
+
+    rc = mdb_cursor_get(
+        cursor,
+        &key,
+        &val,
+        MDB_FIRST
+    );
+
+    while (rc == 0)
+    {
+        if (val.mv_size == sizeof(payment_t))
+        {
+            const payment_t *payment =
+                (const payment_t*)val.mv_data;
+
+            insert_recent_payment(
+                items,
+                &count,
+                limit,
+                payment
+            );
+        }
+
+        rc = mdb_cursor_get(
+            cursor,
+            &key,
+            &val,
+            MDB_NEXT
+        );
+    }
+
+    for (unsigned i = 0; i < count; i++)
+    {
+        char address[ADDRESS_MAX + 1];
+
+        memcpy(
+            address,
+            items[i].address,
+            ADDRESS_MAX
+        );
+
+        address[ADDRESS_MAX] = '\0';
+
+        size_t len =
+            strnlen(
+                address,
+                ADDRESS_MAX
+            );
+
+        char masked[32] = {0};
+
+        if (len > 20)
+        {
+            snprintf(
+                masked,
+                sizeof(masked),
+                "%.8s...%.8s",
+                address,
+                address + len - 8
+            );
+        }
+        else
+        {
+            snprintf(
+                masked,
+                sizeof(masked),
+                "%s",
+                address
+            );
+        }
+
+        int written =
+            snprintf(
+                out,
+                (size_t)(list_end - out),
+                "%s{"
+                "\"amount\":%"PRIu64","
+                "\"timestamp\":%"PRIu64","
+                "\"wallet\":\"%s\""
+                "}",
+                i ? "," : "",
+                items[i].amount,
+                (uint64_t)items[i].timestamp,
+                masked
+            );
+
+        if (
+            written < 0 ||
+            out + written >= list_end
+        )
+            break;
+
+        out += written;
+    }
+
+cleanup:
+
+    if (cursor)
+        mdb_cursor_close(cursor);
+
+    if (txn)
+        mdb_txn_abort(txn);
+
+    pthread_rwlock_unlock(
+        &rwlock_tx
+    );
+}
+
+
+void
+account_recent_payments_json(
+        char *list_start,
+        char *list_end,
+        const char *address,
+        unsigned limit)
+{
+    int rc = 0;
+
+    MDB_txn *txn = NULL;
+    MDB_cursor *cursor = NULL;
+    MDB_val key;
+    MDB_val val;
+
+    char *out = list_start;
+
+    if (
+        !list_start ||
+        !list_end ||
+        list_start >= list_end ||
+        !address
+    )
+        return;
+
+    *out = '\0';
+
+    if (strlen(address) > ADDRESS_MAX)
+        return;
+
+    if (limit == 0)
+        return;
+
+    if (limit > 50)
+        limit = 50;
+
+    recent_payment_view_t items[50];
+
+    memset(
+        items,
+        0,
+        sizeof(items)
+    );
+
+    unsigned count = 0;
+
+    pthread_rwlock_rdlock(
+        &rwlock_tx
+    );
+
+    rc = pdb_txn_begin(
+        env,
+        NULL,
+        MDB_RDONLY,
+        &txn
+    );
+
+    if (rc)
+        goto cleanup;
+
+    rc = mdb_cursor_open(
+        txn,
+        db_payments,
+        &cursor
+    );
+
+    if (rc)
+        goto cleanup;
+
+    key.mv_data =
+        (void*)address;
+
+    key.mv_size =
+        ADDRESS_MAX;
+
+    rc = mdb_cursor_get(
+        cursor,
+        &key,
+        &val,
+        MDB_SET
+    );
+
+    while (rc == 0)
+    {
+        if (val.mv_size == sizeof(payment_t))
+        {
+            const payment_t *payment =
+                (const payment_t*)val.mv_data;
+
+            insert_recent_payment(
+                items,
+                &count,
+                limit,
+                payment
+            );
+        }
+
+        rc = mdb_cursor_get(
+            cursor,
+            &key,
+            &val,
+            MDB_NEXT_DUP
+        );
+    }
+
+    for (unsigned i = 0; i < count; i++)
+    {
+        int written =
+            snprintf(
+                out,
+                (size_t)(list_end - out),
+                "%s{"
+                "\"amount\":%"PRIu64","
+                "\"timestamp\":%"PRIu64
+                "}",
+                i ? "," : "",
+                items[i].amount,
+                (uint64_t)items[i].timestamp
+            );
+
+        if (
+            written < 0 ||
+            out + written >= list_end
+        )
+            break;
+
+        out += written;
+    }
+
+cleanup:
+
+    if (cursor)
+        mdb_cursor_close(cursor);
+
+    if (txn)
+        mdb_txn_abort(txn);
+
+    pthread_rwlock_unlock(
+        &rwlock_tx
+    );
+}
+
 
 uint64_t
 account_total_paid(

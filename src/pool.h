@@ -42,4 +42,30 @@ uint64_t account_total_paid(
 uint64_t worker_count(const char *address);
 void worker_list(char *list_start, char *list_end, const char *address);
 
+/*
+ * Serialize recent pool-found blocks as JSON objects.
+ *
+ * Output does not include the surrounding JSON array brackets.
+ * current_height is the daemon's current chain height.
+ */
+void pool_recent_blocks_json(
+    char *list_start,
+    char *list_end,
+    uint64_t current_height,
+    unsigned limit
+);
+
+void pool_recent_payments_json(
+    char *list_start,
+    char *list_end,
+    unsigned limit
+);
+
+void account_recent_payments_json(
+    char *list_start,
+    char *list_end,
+    const char *address,
+    unsigned limit
+);
+
 #endif

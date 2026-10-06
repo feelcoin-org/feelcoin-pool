@@ -1814,6 +1814,321 @@ Waiting for network data...
 </section>
 
 
+<style id="feel-pool-blocks-style">
+
+.feel-pool-blocks{
+    margin-top:18px;
+}
+
+.feel-blocks-summary{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:12px;
+    margin-top:18px;
+}
+
+.feel-block-summary{
+    padding:18px;
+    border:1px solid rgba(255,255,255,.10);
+    border-radius:16px;
+    background:rgba(10,18,30,.54);
+    backdrop-filter:blur(12px);
+    -webkit-backdrop-filter:blur(12px);
+}
+
+.feel-block-summary .label{
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:.08em;
+    opacity:.68;
+}
+
+.feel-block-summary strong{
+    display:block;
+    margin-top:7px;
+    font-size:20px;
+}
+
+.feel-block-table-wrap{
+    margin-top:18px;
+    overflow-x:auto;
+    border:1px solid rgba(255,255,255,.10);
+    border-radius:16px;
+    background:rgba(7,14,24,.46);
+}
+
+.feel-block-table{
+    width:100%;
+    border-collapse:collapse;
+    min-width:780px;
+}
+
+.feel-block-table th,
+.feel-block-table td{
+    padding:13px 14px;
+    text-align:left;
+    border-bottom:1px solid rgba(255,255,255,.07);
+}
+
+.feel-block-table th{
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:.07em;
+    opacity:.62;
+    white-space:nowrap;
+}
+
+.feel-block-table tbody tr:last-child td{
+    border-bottom:0;
+}
+
+.feel-block-table tbody tr:hover{
+    background:rgba(255,255,255,.025);
+}
+
+.feel-block-height{
+    font-weight:800;
+}
+
+.feel-block-hash{
+    font-family:monospace;
+    white-space:nowrap;
+}
+
+.feel-block-status{
+    display:inline-flex;
+    align-items:center;
+    gap:7px;
+    padding:6px 10px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:800;
+}
+
+.feel-block-status::before{
+    content:"";
+    width:7px;
+    height:7px;
+    border-radius:50%;
+    background:currentColor;
+    box-shadow:0 0 9px currentColor;
+}
+
+.feel-block-status.pending{
+    color:#ffc857;
+    background:rgba(255,200,87,.10);
+}
+
+.feel-block-status.confirmed{
+    color:#38d996;
+    background:rgba(56,217,150,.10);
+}
+
+.feel-block-status.orphaned{
+    color:#ff6b7a;
+    background:rgba(255,107,122,.10);
+}
+
+.feel-blocks-note{
+    margin-top:14px;
+    font-size:12px;
+    opacity:.68;
+    line-height:1.6;
+}
+
+.feel-blocks-empty{
+    padding:28px !important;
+    text-align:center !important;
+    opacity:.65;
+}
+
+@media(max-width:900px){
+    .feel-blocks-summary{
+        grid-template-columns:repeat(2,1fr);
+    }
+}
+
+@media(max-width:560px){
+    .feel-blocks-summary{
+        grid-template-columns:1fr;
+    }
+}
+
+
+
+
+.feel-miner-detail-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:16px;
+    margin-top:18px;
+}
+
+.feel-miner-detail-card{
+    border:1px solid rgba(255,255,255,.10);
+    border-radius:16px;
+    padding:18px;
+    background:rgba(7,14,24,.46);
+}
+
+.feel-miner-list{
+    margin-top:12px;
+}
+
+.feel-miner-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:14px;
+    padding:12px 0;
+    border-bottom:1px solid rgba(255,255,255,.07);
+}
+
+.feel-miner-row:last-child{
+    border-bottom:0;
+}
+
+.feel-miner-row strong{
+    font-size:14px;
+}
+
+.feel-miner-row span{
+    color:var(--muted);
+    font-size:13px;
+}
+
+.feel-miner-empty{
+    padding:18px;
+    text-align:center;
+    color:var(--muted);
+}
+
+.feel-payment-table-wrap{
+    margin-top:18px;
+    overflow-x:auto;
+    border:1px solid rgba(255,255,255,.10);
+    border-radius:16px;
+    background:rgba(7,14,24,.46);
+}
+
+.feel-payment-table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+.feel-payment-table th,
+.feel-payment-table td{
+    text-align:left;
+    padding:13px 14px;
+    border-bottom:1px solid rgba(255,255,255,.07);
+}
+
+.feel-payment-table th{
+    text-transform:uppercase;
+    letter-spacing:.07em;
+    font-size:11px;
+    opacity:.62;
+}
+
+.feel-payment-table tr:last-child td{
+    border-bottom:0;
+}
+
+@media(max-width:800px){
+    .feel-miner-detail-grid{
+        grid-template-columns:1fr;
+    }
+}
+
+</style>
+
+
+<section
+class="card section feel-pool-blocks"
+id="poolblocks">
+
+<div class="section-title">
+
+<div>
+
+<h2>
+Pool Block Performance
+</h2>
+
+<p>
+Live PPLNS blocks found by the official Feelcoin mining pool.
+</p>
+
+</div>
+
+</div>
+
+
+<div class="feel-blocks-summary">
+
+<div class="feel-block-summary">
+<div class="label">Blocks Found</div>
+<strong id="feelBlocksFound">—</strong>
+</div>
+
+<div class="feel-block-summary">
+<div class="label">Last Pool Block</div>
+<strong id="feelLastBlock">—</strong>
+</div>
+
+<div class="feel-block-summary">
+<div class="label">Reward Scheme</div>
+<strong>PPLNS</strong>
+</div>
+
+<div class="feel-block-summary">
+<div class="label">Confirmation Depth</div>
+<strong>60 blocks</strong>
+</div>
+
+</div>
+
+
+<div class="feel-block-table-wrap">
+
+<table class="feel-block-table">
+
+<thead>
+<tr>
+<th>Height</th>
+<th>Found</th>
+<th>Block Hash</th>
+<th>Reward</th>
+<th>Confirmations</th>
+<th>Status</th>
+</tr>
+</thead>
+
+<tbody id="feelPoolBlocksBody">
+
+<tr>
+<td colspan="6" class="feel-blocks-empty">
+Loading recent pool blocks...
+</td>
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+
+
+<div class="feel-blocks-note">
+PPLNS rewards are distributed according to miners' contribution
+within the pool share window. Newly found blocks remain pending
+until the 60-block confirmation depth is reached. Orphaned blocks
+are displayed transparently and are not eligible for payout.
+</div>
+
+</section>
+
+
 
 
 
@@ -1830,6 +2145,263 @@ Waiting for network data...
 
 
 
+
+
+
+<section
+class="card section"
+id="recentpayments">
+
+<div class="section-title">
+
+<div>
+
+<h2>
+Recent Pool Payouts
+</h2>
+
+<p>
+Recent automatic payouts from the Feelcoin mining pool.
+</p>
+
+</div>
+
+</div>
+
+
+<div class="feel-payment-table-wrap">
+
+<table class="feel-payment-table">
+
+<thead>
+<tr>
+<th>Paid</th>
+<th>Wallet</th>
+<th>Amount</th>
+</tr>
+</thead>
+
+<tbody id="poolPaymentsBody">
+
+<tr>
+<td colspan="3" class="feel-miner-empty">
+Loading recent payouts...
+</td>
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+
+<div class="feel-blocks-note">
+Wallet addresses are shortened for public display.
+Historical pool records currently store payout amount,
+wallet and timestamp; transaction hashes are not retained
+in the legacy payment database.
+</div>
+
+</section>
+
+
+
+<section
+class="card section"
+id="miner">
+
+
+<div class="section-title">
+
+<div>
+
+<h2>
+Miner Dashboard
+</h2>
+
+<p>
+
+Enter your Feelcoin wallet address to
+load miner statistics.
+
+</p>
+
+</div>
+
+</div>
+
+
+
+<div class="lookup">
+
+<input
+id="addressInput"
+placeholder="Your Feelcoin wallet address"
+autocomplete="off"
+spellcheck="false">
+
+
+<button
+class="primary"
+id="lookupButton">
+
+Load Miner
+
+</button>
+
+</div>
+
+
+
+<div
+class="minerstats"
+id="minerStats">
+
+
+<div class="info-box">
+
+<div class="label">
+Your Hashrate
+</div>
+
+<strong
+id="miner_hashrate">
+
+—
+
+</strong>
+
+</div>
+
+
+<div class="info-box">
+
+<div class="label">
+Balance Due
+</div>
+
+<strong
+id="miner_balance">
+
+—
+
+</strong>
+
+</div>
+
+
+<div class="info-box">
+
+<div class="label">
+Total Paid
+</div>
+
+<strong
+id="miner_total_paid">
+
+—
+
+</strong>
+
+</div>
+
+
+<div class="info-box">
+
+<div class="label">
+Last Payment
+</div>
+
+<strong
+id="miner_last_payment">
+
+—
+
+</strong>
+
+</div>
+
+
+<div class="info-box">
+
+<div class="label">
+Wallet
+</div>
+
+<strong
+id="walletDisplay"
+style="font-size:12px">
+
+—
+
+</strong>
+
+</div>
+
+
+<div class="info-box">
+
+<div class="label">
+Workers Online
+</div>
+
+<strong id="miner_worker_count">
+—
+</strong>
+
+</div>
+
+
+</div>
+
+
+<div class="feel-miner-detail-grid">
+
+<div class="feel-miner-detail-card">
+
+<div class="section-title">
+<div>
+<h3>Your Workers</h3>
+<p>Currently connected mining workers.</p>
+</div>
+</div>
+
+<div id="minerWorkersList"
+class="feel-miner-list">
+
+<div class="feel-miner-empty">
+Load your wallet to view workers.
+</div>
+
+</div>
+
+</div>
+
+
+<div class="feel-miner-detail-card">
+
+<div class="section-title">
+<div>
+<h3>Your Recent Payments</h3>
+<p>Recent payouts recorded for this wallet.</p>
+</div>
+</div>
+
+<div id="minerPaymentsList"
+class="feel-miner-list">
+
+<div class="feel-miner-empty">
+Load your wallet to view payment history.
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+
+</section>
 
 
 
@@ -2043,6 +2615,8 @@ Copy
 
 
 
+
+
 <section
 class="card section"
 id="poolinfo">
@@ -2191,144 +2765,6 @@ Enabled
 </section>
 
 
-
-<section
-class="card section"
-id="miner">
-
-
-<div class="section-title">
-
-<div>
-
-<h2>
-Miner Dashboard
-</h2>
-
-<p>
-
-Enter your Feelcoin wallet address to
-load miner statistics.
-
-</p>
-
-</div>
-
-</div>
-
-
-
-<div class="lookup">
-
-<input
-id="addressInput"
-placeholder="Your Feelcoin wallet address"
-autocomplete="off"
-spellcheck="false">
-
-
-<button
-class="primary"
-id="lookupButton">
-
-Load Miner
-
-</button>
-
-</div>
-
-
-
-<div
-class="minerstats"
-id="minerStats">
-
-
-<div class="info-box">
-
-<div class="label">
-Your Hashrate
-</div>
-
-<strong
-id="miner_hashrate">
-
-—
-
-</strong>
-
-</div>
-
-
-<div class="info-box">
-
-<div class="label">
-Balance Due
-</div>
-
-<strong
-id="miner_balance">
-
-—
-
-</strong>
-
-</div>
-
-
-<div class="info-box">
-
-<div class="label">
-Total Paid
-</div>
-
-<strong
-id="miner_total_paid">
-
-—
-
-</strong>
-
-</div>
-
-
-<div class="info-box">
-
-<div class="label">
-Last Payment
-</div>
-
-<strong
-id="miner_last_payment">
-
-—
-
-</strong>
-
-</div>
-
-
-<div class="info-box">
-
-<div class="label">
-Wallet
-</div>
-
-<strong
-id="walletDisplay"
-style="font-size:12px">
-
-—
-
-</strong>
-
-</div>
-
-
-</div>
-
-
-</section>
 
 
 
@@ -2770,6 +3206,34 @@ function applyStats(stats){
             );
 
 
+    if(
+        stats.pool_blocks_found !== undefined &&
+        $("feelBlocksFound")
+    )
+        $("feelBlocksFound").textContent =
+            formatNumber(
+                stats.pool_blocks_found
+            );
+
+
+    if(
+        stats.last_block_found !== undefined &&
+        $("feelLastBlock")
+    ){
+
+        const ts =
+            Number(
+                stats.last_block_found
+            );
+
+        $("feelLastBlock").textContent =
+            ts > 0
+                ? poolBlockAge(ts)
+                : "No blocks yet";
+
+    }
+
+
     if(stats.pool_port !== undefined)
         $("pool_port").textContent =
             stats.pool_port;
@@ -2811,6 +3275,15 @@ function applyStats(stats){
         $("miner_hashrate").textContent =
             formatHashrate(
                 stats.miner_hashrate
+            );
+
+    if(
+        stats.worker_count !== undefined &&
+        $("miner_worker_count")
+    )
+        $("miner_worker_count").textContent =
+            formatNumber(
+                stats.worker_count
             );
 
 if(stats.miner_balance !== undefined)
@@ -2873,6 +3346,604 @@ if(stats.miner_last_payment !== undefined){
 
 }
 
+
+
+function poolBlockAge(timestamp){
+
+    const seconds =
+        Math.max(
+            0,
+            Math.floor(
+                Date.now() / 1000 -
+                Number(timestamp || 0)
+            )
+        );
+
+    if(seconds < 60)
+        return seconds + "s ago";
+
+    const minutes =
+        Math.floor(seconds / 60);
+
+    if(minutes < 60)
+        return minutes + "m ago";
+
+    const hours =
+        Math.floor(minutes / 60);
+
+    if(hours < 24)
+        return hours + "h ago";
+
+    const days =
+        Math.floor(hours / 24);
+
+    return days + "d ago";
+}
+
+
+function shortBlockHash(hash){
+
+    if(!hash)
+        return "—";
+
+    return (
+        hash.slice(0,8) +
+        "..." +
+        hash.slice(-8)
+    );
+}
+
+
+function poolRewardFeel(value){
+
+    const atomic =
+        Number(value || 0);
+
+    return (
+        atomic / 1000000000000
+    ).toFixed(6) + " FEEL";
+}
+
+
+function renderPoolBlocks(data){
+
+    const body =
+        $("feelPoolBlocksBody");
+
+    if(!body)
+        return;
+
+    const blocks =
+        Array.isArray(data.blocks)
+            ? data.blocks
+            : [];
+
+    body.innerHTML = "";
+
+    if(!blocks.length){
+
+        const row =
+            document.createElement("tr");
+
+        const cell =
+            document.createElement("td");
+
+        cell.colSpan = 6;
+        cell.className =
+            "feel-blocks-empty";
+
+        cell.textContent =
+            "No pool blocks recorded yet.";
+
+        row.appendChild(cell);
+        body.appendChild(row);
+
+        return;
+    }
+
+    blocks.forEach(function(block){
+
+        const row =
+            document.createElement("tr");
+
+
+        const heightCell =
+            document.createElement("td");
+
+        heightCell.className =
+            "feel-block-height";
+
+        const heightLink =
+            document.createElement("a");
+
+        heightLink.href =
+            "https://explorer.feelcoin.org/?q=" +
+            encodeURIComponent(
+                block.height
+            );
+
+        heightLink.target =
+            "_blank";
+
+        heightLink.rel =
+            "noopener noreferrer";
+
+        heightLink.textContent =
+            formatNumber(block.height);
+
+        heightLink.title =
+            "Open Feelcoin Explorer";
+
+        heightCell.appendChild(
+            heightLink
+        );
+
+
+        const ageCell =
+            document.createElement("td");
+
+        ageCell.textContent =
+            poolBlockAge(
+                block.timestamp
+            );
+
+
+        const hashCell =
+            document.createElement("td");
+
+        hashCell.className =
+            "feel-block-hash";
+
+        const hashLink =
+            document.createElement("a");
+
+        hashLink.href =
+            "https://explorer.feelcoin.org/?q=" +
+            encodeURIComponent(
+                block.hash
+            );
+
+        hashLink.target =
+            "_blank";
+
+        hashLink.rel =
+            "noopener noreferrer";
+
+        hashLink.textContent =
+            shortBlockHash(
+                block.hash
+            );
+
+        hashLink.title =
+            block.hash || "";
+
+        hashCell.appendChild(
+            hashLink
+        );
+
+
+        const rewardCell =
+            document.createElement("td");
+
+        rewardCell.textContent =
+            poolRewardFeel(
+                block.reward
+            );
+
+
+        const confirmationsCell =
+            document.createElement("td");
+
+        const confirmations =
+            Number(
+                block.confirmations || 0
+            );
+
+        const required =
+            Number(
+                block.required_confirmations || 60
+            );
+
+        confirmationsCell.textContent =
+            block.status === "orphaned"
+                ? "—"
+                : Math.min(
+                    confirmations,
+                    required
+                  ) +
+                  " / " +
+                  required;
+
+
+        const statusCell =
+            document.createElement("td");
+
+        const badge =
+            document.createElement("span");
+
+        const status =
+            String(
+                block.status || "pending"
+            ).toLowerCase();
+
+        badge.className =
+            "feel-block-status " +
+            (
+                status === "confirmed"
+                    ? "confirmed"
+                    : status === "orphaned"
+                    ? "orphaned"
+                    : "pending"
+            );
+
+        badge.textContent =
+            status === "confirmed"
+                ? "Confirmed"
+                : status === "orphaned"
+                ? "Orphaned"
+                : "Pending";
+
+        statusCell.appendChild(
+            badge
+        );
+
+
+        row.appendChild(heightCell);
+        row.appendChild(ageCell);
+        row.appendChild(hashCell);
+        row.appendChild(rewardCell);
+        row.appendChild(confirmationsCell);
+        row.appendChild(statusCell);
+
+        body.appendChild(row);
+
+    });
+
+}
+
+
+async function refreshPoolBlocks(){
+
+    try{
+
+        const response =
+            await fetch(
+                "/blocks",
+                {
+                    cache:"no-store"
+                }
+            );
+
+        if(!response.ok)
+            throw new Error(
+                "HTTP " +
+                response.status
+            );
+
+        const data =
+            await response.json();
+
+        renderPoolBlocks(data);
+
+    }
+    catch(error){
+
+        const body =
+            $("feelPoolBlocksBody");
+
+        if(body){
+
+            body.innerHTML =
+                '<tr>' +
+                '<td colspan="6" class="feel-blocks-empty">' +
+                'Unable to load pool block history.' +
+                '</td>' +
+                '</tr>';
+
+        }
+
+        console.warn(
+            "Pool block history:",
+            error
+        );
+
+    }
+
+}
+
+
+function paymentAge(timestamp){
+
+    return poolBlockAge(
+        timestamp
+    );
+
+}
+
+
+async function refreshPoolPayments(){
+
+    const body =
+        $("poolPaymentsBody");
+
+    if(!body)
+        return;
+
+    try{
+
+        const response =
+            await fetch(
+                "/payments",
+                {cache:"no-store"}
+            );
+
+        if(!response.ok)
+            throw new Error(
+                "HTTP " + response.status
+            );
+
+        const data =
+            await response.json();
+
+        const payments =
+            Array.isArray(data.payments)
+                ? data.payments
+                : [];
+
+        body.innerHTML = "";
+
+        if(!payments.length){
+
+            body.innerHTML =
+                '<tr><td colspan="3" class="feel-miner-empty">' +
+                'No payouts recorded yet.' +
+                '</td></tr>';
+
+            return;
+        }
+
+        payments.forEach(function(payment){
+
+            const row =
+                document.createElement("tr");
+
+            const paid =
+                document.createElement("td");
+
+            paid.textContent =
+                paymentAge(
+                    payment.timestamp
+                );
+
+            const wallet =
+                document.createElement("td");
+
+            wallet.textContent =
+                payment.wallet || "—";
+
+            wallet.style.fontFamily =
+                "monospace";
+
+            const amount =
+                document.createElement("td");
+
+            amount.textContent =
+                poolRewardFeel(
+                    payment.amount
+                );
+
+            row.appendChild(paid);
+            row.appendChild(wallet);
+            row.appendChild(amount);
+
+            body.appendChild(row);
+
+        });
+
+    }
+    catch(error){
+
+        body.innerHTML =
+            '<tr><td colspan="3" class="feel-miner-empty">' +
+            'Unable to load payout history.' +
+            '</td></tr>';
+
+        console.warn(
+            "Pool payouts:",
+            error
+        );
+
+    }
+
+}
+
+
+async function refreshMinerWorkers(){
+
+    const target =
+        $("minerWorkersList");
+
+    if(!target)
+        return;
+
+    try{
+
+        const response =
+            await fetch(
+                "/workers",
+                {cache:"no-store"}
+            );
+
+        if(!response.ok)
+            throw new Error(
+                "HTTP " + response.status
+            );
+
+        const values =
+            await response.json();
+
+        target.innerHTML = "";
+
+        if(
+            !Array.isArray(values) ||
+            !values.length
+        ){
+
+            target.innerHTML =
+                '<div class="feel-miner-empty">' +
+                'No workers currently connected.' +
+                '</div>';
+
+            return;
+        }
+
+        for(
+            let i = 0;
+            i < values.length;
+            i += 2
+        ){
+
+            const rig =
+                values[i] || "worker";
+
+            const hashrate =
+                Number(
+                    values[i + 1] || 0
+                );
+
+            const row =
+                document.createElement("div");
+
+            row.className =
+                "feel-miner-row";
+
+            const name =
+                document.createElement("strong");
+
+            name.textContent =
+                rig;
+
+            const rate =
+                document.createElement("span");
+
+            rate.textContent =
+                formatHashrate(
+                    hashrate
+                );
+
+            row.appendChild(name);
+            row.appendChild(rate);
+
+            target.appendChild(row);
+
+        }
+
+    }
+    catch(error){
+
+        target.innerHTML =
+            '<div class="feel-miner-empty">' +
+            'Unable to load workers.' +
+            '</div>';
+
+    }
+
+}
+
+
+async function refreshMinerPayments(){
+
+    const target =
+        $("minerPaymentsList");
+
+    if(!target)
+        return;
+
+    try{
+
+        const response =
+            await fetch(
+                "/miner-payments",
+                {cache:"no-store"}
+            );
+
+        if(!response.ok)
+            throw new Error(
+                "HTTP " + response.status
+            );
+
+        const data =
+            await response.json();
+
+        const payments =
+            Array.isArray(data.payments)
+                ? data.payments
+                : [];
+
+        target.innerHTML = "";
+
+        if(!payments.length){
+
+            target.innerHTML =
+                '<div class="feel-miner-empty">' +
+                'No payments recorded for this wallet yet.' +
+                '</div>';
+
+            return;
+        }
+
+        payments.forEach(function(payment){
+
+            const row =
+                document.createElement("div");
+
+            row.className =
+                "feel-miner-row";
+
+            const amount =
+                document.createElement("strong");
+
+            amount.textContent =
+                poolRewardFeel(
+                    payment.amount
+                );
+
+            const time =
+                document.createElement("span");
+
+            time.textContent =
+                paymentAge(
+                    payment.timestamp
+                );
+
+            row.appendChild(amount);
+            row.appendChild(time);
+
+            target.appendChild(row);
+
+        });
+
+    }
+    catch(error){
+
+        target.innerHTML =
+            '<div class="feel-miner-empty">' +
+            'Unable to load payment history.' +
+            '</div>';
+
+    }
+
+}
+
+
+async function refreshMinerDetail(){
+
+    await Promise.all([
+        refreshMinerWorkers(),
+        refreshMinerPayments()
+    ]);
+
+}
 
 
 async function refresh(){
@@ -2952,6 +4023,7 @@ $("lookupButton")
 
 
         refresh();
+        refreshMinerDetail();
 
     }
 );
@@ -2991,14 +4063,28 @@ if(existingWallet){
         .classList
         .add("show");
 
+    refreshMinerDetail();
+
 }
 
 
 
 refresh();
+refreshPoolBlocks();
+refreshPoolPayments();
 
 setInterval(
     refresh,
+    30000
+);
+
+setInterval(
+    refreshPoolBlocks,
+    30000
+);
+
+setInterval(
+    refreshPoolPayments,
     30000
 );
 

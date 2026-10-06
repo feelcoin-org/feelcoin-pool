@@ -96,6 +96,166 @@ send_json_workers(struct evhttp_request *req, void *arg)
 }
 
 static void
+send_json_payments(
+        struct evhttp_request *req,
+        void *arg)
+{
+    struct evbuffer *buf =
+        evhttp_request_get_output_buffer(req);
+
+    struct evkeyvalq *hdrs_out = NULL;
+
+    char list[0x40000] = {0};
+
+    pool_recent_payments_json(
+        list,
+        list + sizeof(list),
+        25
+    );
+
+    evbuffer_add_printf(
+        buf,
+        "{\"payments\":[%s]}",
+        list
+    );
+
+    hdrs_out =
+        evhttp_request_get_output_headers(req);
+
+    evhttp_add_header(
+        hdrs_out,
+        "Content-Type",
+        "application/json"
+    );
+
+    evhttp_add_header(
+        hdrs_out,
+        "Cache-Control",
+        "no-store"
+    );
+
+    evhttp_send_reply(
+        req,
+        HTTP_OK,
+        "OK",
+        buf
+    );
+}
+
+
+static void
+send_json_miner_payments(
+        struct evhttp_request *req,
+        void *arg)
+{
+    struct evbuffer *buf =
+        evhttp_request_get_output_buffer(req);
+
+    struct evkeyvalq *hdrs_out = NULL;
+
+    const char *wa =
+        fetch_wa_cookie(req);
+
+    char list[0x40000] = {0};
+
+    if (wa)
+    {
+        account_recent_payments_json(
+            list,
+            list + sizeof(list),
+            wa,
+            25
+        );
+    }
+
+    evbuffer_add_printf(
+        buf,
+        "{\"payments\":[%s]}",
+        list
+    );
+
+    hdrs_out =
+        evhttp_request_get_output_headers(req);
+
+    evhttp_add_header(
+        hdrs_out,
+        "Content-Type",
+        "application/json"
+    );
+
+    evhttp_add_header(
+        hdrs_out,
+        "Cache-Control",
+        "no-store"
+    );
+
+    evhttp_send_reply(
+        req,
+        HTTP_OK,
+        "OK",
+        buf
+    );
+}
+
+
+static void
+send_json_blocks(struct evhttp_request *req, void *arg)
+{
+    struct evbuffer *buf =
+        evhttp_request_get_output_buffer(req);
+
+    struct evkeyvalq *hdrs_out = NULL;
+
+    wui_context_t *context =
+        (wui_context_t*)arg;
+
+    char block_list[0x40000] = {0};
+
+    char *end =
+        block_list + sizeof(block_list);
+
+    pool_recent_blocks_json(
+        block_list,
+        end,
+        context->pool_stats->network_height,
+        25
+    );
+
+    evbuffer_add_printf(
+        buf,
+        "{"
+        "\"scheme\":\"PPLNS\","
+        "\"required_confirmations\":60,"
+        "\"blocks\":[%s]"
+        "}",
+        block_list
+    );
+
+    hdrs_out =
+        evhttp_request_get_output_headers(req);
+
+    evhttp_add_header(
+        hdrs_out,
+        "Content-Type",
+        "application/json"
+    );
+
+    evhttp_add_header(
+        hdrs_out,
+        "Cache-Control",
+        "no-store"
+    );
+
+    evhttp_send_reply(
+        req,
+        HTTP_OK,
+        "OK",
+        buf
+    );
+}
+
+
+static void
 send_json_stats(struct evhttp_request *req, void *arg)
 {
     struct evbuffer *buf = evhttp_request_get_output_buffer(req);
@@ -186,6 +346,24 @@ process_request(struct evhttp_request *req, void *arg)
     const char *url = evhttp_request_get_uri(req);
     struct evbuffer *buf = NULL;
     struct evkeyvalq *hdrs_out = NULL;
+
+    if (strstr(url, "/miner-payments") != NULL)
+    {
+        send_json_miner_payments(req, arg);
+        return;
+    }
+
+    if (strstr(url, "/payments") != NULL)
+    {
+        send_json_payments(req, arg);
+        return;
+    }
+
+    if (strstr(url, "/blocks") != NULL)
+    {
+        send_json_blocks(req, arg);
+        return;
+    }
 
     if (strstr(url, "/stats") != NULL)
     {
