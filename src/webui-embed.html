@@ -1432,6 +1432,85 @@ footer{
 
 </style>
 
+
+
+<style>
+/* FEELCOIN FINAL PAGE LAYOUT */
+
+/* -----------------------------------------
+   TOP AREA
+   Row 1: Full-width hero
+   Row 2: Miner + Quick Connect
+   ----------------------------------------- */
+
+@media (min-width: 901px) {
+
+    #dashboard .hero-main {
+        grid-column: 1 / -1 !important;
+        width: 100%;
+        min-height: 340px;
+    }
+
+    #official-miner {
+        grid-column: 1 !important;
+        width: 100%;
+        height: 100%;
+    }
+
+    #connect {
+        grid-column: 2 !important;
+        width: 100%;
+        height: 100%;
+    }
+
+}
+
+/* -----------------------------------------
+   CONSISTENT CONTENT WIDTH
+   ----------------------------------------- */
+
+#mining,
+#recentpayments,
+#miner,
+#poolinfo,
+#faq {
+    width: min(1480px, calc(100% - 64px));
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+
+/* Keep tables/content safely inside cards */
+#recentpayments .feel-payment-table-wrap,
+#miner .feel-miner-detail-grid {
+    width: 100%;
+    max-width: 100%;
+}
+
+/* -----------------------------------------
+   RESPONSIVE
+   ----------------------------------------- */
+
+@media (max-width: 900px) {
+
+    #dashboard .hero-main,
+    #official-miner,
+    #connect {
+        grid-column: 1 !important;
+        width: 100%;
+    }
+
+    #mining,
+    #recentpayments,
+    #miner,
+    #poolinfo,
+    #faq {
+        width: calc(100% - 28px);
+    }
+
+}
+
+</style>
+
 </head>
 
 
@@ -1494,6 +1573,12 @@ Paper Wallet
 target="_blank"
 rel="noopener noreferrer">
 Website
+</a>
+
+<a href="https://github.com/feelcoin-org/feelcoin-miner/releases/latest"
+target="_blank"
+rel="noopener noreferrer">
+Download Miner
 </a>
 
 <a href="https://github.com/feelcoin-org/feelcoin"
@@ -1586,6 +1671,50 @@ Dynamic Difficulty
 
 </div>
 
+
+
+<div class="card quick" id="official-miner">
+
+<h3>Official Feelcoin Miner v0.1.0</h3>
+
+<p style="margin-top:8px; margin-bottom:16px;">
+Native FEEL wallet support • RandomX • TLS pool mining • Direct solo mining • 0% default upstream donation
+</p>
+
+<div class="info-line">
+
+<div class="label">
+Platform
+</div>
+
+<div class="value">
+Linux x86_64
+</div>
+
+</div>
+
+<div class="info-line">
+
+<div class="label">
+Release
+</div>
+
+<div class="value">
+v0.1.0
+</div>
+
+</div>
+
+<div style="margin-top:18px;">
+<a href="https://github.com/feelcoin-org/feelcoin-miner/releases/latest"
+   target="_blank"
+   rel="noopener noreferrer"
+   class="button">
+Download Official Miner
+</a>
+</div>
+
+</div>
 
 
 <div class="card quick" id="connect">
@@ -2420,8 +2549,8 @@ Start Mining
 
 <p>
 
-Connect XMRig or another compatible
-RandomX miner.
+Use the official Feelcoin Miner or another compatible
+RandomX miner such as XMRig.
 
 </p>
 
@@ -2513,91 +2642,189 @@ RandomX
 
 
 <h3 style="margin-top:28px">
-XMRig Quick Command
+Official Feelcoin Miner
 </h3>
+
+<p style="margin-top:8px; margin-bottom:18px; opacity:.86;">
+Recommended for Feelcoin. Native FEEL wallet support, RandomX,
+TLS pool mining, direct solo mining and 0% default upstream donation.
+</p>
+
+<div class="xmrig-command-grid">
+
+  <div class="xmrig-command-card xmrig-secure">
+    <div class="xmrig-command-head">
+      <div>
+        <div class="xmrig-command-title">POOL MINING</div>
+        <div class="xmrig-command-sub">Official TLS pool • Recommended</div>
+      </div>
+
+      <button class="xmrig-copy-btn"
+        onclick="copyText('feelcoinMinerPool')">
+        Copy
+      </button>
+    </div>
+
+    <pre id="feelcoinMinerPool">./feelcoin-miner --wallet YOUR_FEELCOIN_WALLET_ADDRESS --worker YOUR_WORKER_NAME</pre>
+  </div>
+
+
+  <div class="xmrig-command-card">
+    <div class="xmrig-command-head">
+      <div>
+        <div class="xmrig-command-title">DIRECT SOLO MINING</div>
+        <div class="xmrig-command-sub">Local feelcoind RPC • 0% pool fee</div>
+      </div>
+
+      <button class="xmrig-copy-btn"
+        onclick="copyText('feelcoinMinerSolo')">
+        Copy
+      </button>
+    </div>
+
+    <pre id="feelcoinMinerSolo">./feelcoin-miner --solo --wallet YOUR_FEELCOIN_WALLET_ADDRESS</pre>
+  </div>
+
+</div>
+
+<div style="margin-top:20px; display:flex; gap:12px; flex-wrap:wrap;">
+
+  <a href="https://github.com/feelcoin-org/feelcoin-miner/releases/latest"
+     target="_blank"
+     rel="noopener noreferrer"
+     style="display:inline-flex;align-items:center;padding:12px 18px;border-radius:10px;text-decoration:none;font-weight:700;border:1px solid rgba(255,255,255,.18);">
+    Download Feelcoin Miner v0.1.0
+  </a>
+
+  <a href="https://github.com/feelcoin-org/feelcoin-miner"
+     target="_blank"
+     rel="noopener noreferrer"
+     style="display:inline-flex;align-items:center;padding:12px 18px;border-radius:10px;text-decoration:none;font-weight:700;border:1px solid rgba(255,255,255,.18);">
+    View Source Code
+  </a>
+
+</div>
+
+
+<details style="margin-top:24px;">
+  <summary style="cursor:pointer;font-weight:700;font-size:1.05rem;">
+    Install the Linux release
+  </summary>
+
+  <div class="codebox" style="margin-top:14px;">
+    <button class="copy"
+      onclick="copyText('feelcoinInstall')">
+      Copy
+    </button>
+
+    <pre id="feelcoinInstall">tar -xzf feelcoin-miner-v0.1.0-linux-x64.tar.gz
+cd feelcoin-miner-v0.1.0-linux-x64
+chmod +x feelcoin-miner
+./feelcoin-miner --wallet YOUR_FEELCOIN_WALLET_ADDRESS --worker YOUR_WORKER_NAME</pre>
+  </div>
+
+  <p style="margin-top:12px;opacity:.82;">
+    Linux x86_64 release, built and tested on Ubuntu 26.04.1 LTS.
+    Verify the SHA256 file before running the binary.
+  </p>
+</details>
+
+
+<details style="margin-top:18px;">
+  <summary style="cursor:pointer;font-weight:700;font-size:1.05rem;">
+    Build Feelcoin Miner from source
+  </summary>
+
+  <div class="codebox" style="margin-top:14px;">
+    <button class="copy"
+      onclick="copyText('feelcoinBuild')">
+      Copy
+    </button>
+
+    <pre id="feelcoinBuild">sudo apt update
+sudo apt install -y git build-essential cmake libuv1-dev libssl-dev libhwloc-dev
+
+git clone https://github.com/feelcoin-org/feelcoin-miner.git
+cd feelcoin-miner
+git checkout v0.1.0
+
+mkdir -p build
+cd build
+
+cmake .. -DWITH_OPENCL=OFF -DWITH_CUDA=OFF
+make -j$(nproc)
+
+./feelcoin-miner --version</pre>
+  </div>
+</details>
+
+
+<h3 style="margin-top:34px">
+XMRig Compatibility
+</h3>
+
+<p style="margin-top:8px;margin-bottom:18px;opacity:.82;">
+Feelcoin remains compatible with standard RandomX miners such as XMRig.
+</p>
 
 <div class="xmrig-command-grid">
 
   <div class="xmrig-command-card">
-
     <div class="xmrig-command-head">
       <div>
-        <div class="xmrig-command-title">
-          STANDARD MINING
-        </div>
-
-        <div class="xmrig-command-sub">
-          TCP / No TLS
-        </div>
+        <div class="xmrig-command-title">STANDARD MINING</div>
+        <div class="xmrig-command-sub">TCP / No TLS</div>
       </div>
 
-      <button
-        class="xmrig-copy-btn"
+      <button class="xmrig-copy-btn"
         onclick="copyText('xmrigCommand')">
         Copy
       </button>
     </div>
 
     <pre id="xmrigCommand">xmrig -o pool.feelcoin.org:4242 -u YOUR_FEELCOIN_WALLET_ADDRESS -p x</pre>
-
   </div>
 
 
   <div class="xmrig-command-card xmrig-secure">
-
     <div class="xmrig-command-head">
       <div>
-        <div class="xmrig-command-title">
-          SECURE MINING
-        </div>
-
-        <div class="xmrig-command-sub">
-          TLS 1.2 / TLS 1.3 • Recommended
-        </div>
+        <div class="xmrig-command-title">SECURE MINING</div>
+        <div class="xmrig-command-sub">TLS 1.2 / TLS 1.3 • Recommended</div>
       </div>
 
-      <button
-        class="xmrig-copy-btn"
+      <button class="xmrig-copy-btn"
         onclick="copyText('xmrigTlsCommand')">
         Copy TLS
       </button>
     </div>
 
     <pre id="xmrigTlsCommand">xmrig -o pool.feelcoin.org:4244 -u YOUR_FEELCOIN_WALLET_ADDRESS -p x --tls</pre>
-
   </div>
 
 </div>
 
-<h3 style="margin-top:28px">
 
-XMRig Configuration
+<details style="margin-top:24px;">
+  <summary style="cursor:pointer;font-weight:700;font-size:1.05rem;">
+    Advanced XMRig JSON Configuration
+  </summary>
 
-</h3>
+  <div class="codebox" style="margin-top:14px;">
+    <button class="copy"
+      onclick="copyText('xmrigConfig')">
+      Copy
+    </button>
 
-
-<div class="codebox">
-
-<button
-class="copy"
-onclick="copyText('xmrigConfig')">
-
-Copy
-
-</button>
-
-<pre id="xmrigConfig">{
+    <pre id="xmrigConfig">{
   "autosave": true,
-
   "cpu": {
     "enabled": true,
     "huge-pages": true,
     "yield": true
   },
-
   "opencl": false,
   "cuda": false,
-
   "pools": [
     {
       "url": "pool.feelcoin.org:4242",
@@ -2607,9 +2834,8 @@ Copy
     }
   ]
 }</pre>
-
-</div>
-
+  </div>
+</details>
 
 </section>
 
@@ -4351,6 +4577,33 @@ function showExplorer(){
 
 })();
 
+</script>
+
+
+<script>
+/* FEELCOIN BRAND HOME LINK */
+document.addEventListener("DOMContentLoaded", function () {
+    const brand = document.querySelector(".brand");
+
+    if (!brand) return;
+
+    brand.style.cursor = "pointer";
+    brand.setAttribute("title", "Return to Home");
+    brand.setAttribute("role", "link");
+    brand.setAttribute("tabindex", "0");
+
+    brand.addEventListener("click", function (event) {
+        if (event.target.closest("a")) return;
+        window.location.href = "https://pool.feelcoin.org";
+    });
+
+    brand.addEventListener("keydown", function (event) {
+        if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            window.location.href = "https://pool.feelcoin.org";
+        }
+    });
+});
 </script>
 
 </body>
