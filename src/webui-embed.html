@@ -1511,6 +1511,105 @@ footer{
 
 </style>
 
+
+<style>
+/* ===== FEELCOIN MOBILE VIEWPORT FIX ===== */
+
+/* Never allow the document itself to become wider than the phone */
+html,
+body {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+body {
+    position: relative;
+}
+
+/* Main application wrapper must respect viewport width */
+.shell {
+    width: 100%;
+    max-width: 1440px;
+    min-width: 0;
+}
+
+/* Flex/grid children are allowed to shrink */
+.shell *,
+.hero > *,
+.stats-grid > *,
+.feel-miner-detail-grid > * {
+    min-width: 0;
+}
+
+/* Media should never enlarge the page */
+img,
+svg,
+canvas,
+video {
+    max-width: 100%;
+}
+
+/* Tables/code may scroll INSIDE their own containers,
+   but must never enlarge the entire document */
+pre,
+code {
+    max-width: 100%;
+}
+
+@media (max-width: 720px) {
+
+    html,
+    body {
+        width: 100%;
+        max-width: 100%;
+        overflow-x: hidden !important;
+    }
+
+    body {
+        background-position: center top !important;
+        background-size: cover !important;
+        background-repeat: no-repeat !important;
+        background-attachment: scroll !important;
+    }
+
+    .shell {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        margin: 0 !important;
+        padding-left: 14px !important;
+        padding-right: 14px !important;
+    }
+
+    .topbar,
+    .hero,
+    .card,
+    section,
+    main,
+    footer {
+        max-width: 100%;
+        min-width: 0;
+    }
+
+    #dashboard,
+    #mining,
+    #recentpayments,
+    #miner,
+    #poolinfo,
+    #faq,
+    #connect {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+    }
+}
+
+/* ===== END FEELCOIN MOBILE VIEWPORT FIX ===== */
+</style>
+
 </head>
 
 
