@@ -1610,6 +1610,83 @@ code {
 /* ===== END FEELCOIN MOBILE VIEWPORT FIX ===== */
 </style>
 
+
+<style id="feel-load-miner-button-patch">
+
+#lookupButton{
+    position:relative;
+    cursor:pointer !important;
+    user-select:none;
+    min-width:140px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #875cff 0%,
+            #6738ef 100%
+        ) !important;
+
+    border:1px solid rgba(190,165,255,.75) !important;
+
+    box-shadow:
+        0 0 0 1px rgba(130,82,255,.20),
+        0 8px 22px rgba(91,49,220,.30),
+        inset 0 1px 0 rgba(255,255,255,.20);
+
+    transition:
+        transform .15s ease,
+        box-shadow .15s ease,
+        filter .15s ease;
+}
+
+#lookupButton:hover{
+    transform:translateY(-2px);
+
+    box-shadow:
+        0 0 0 1px rgba(180,150,255,.40),
+        0 0 20px rgba(124,76,255,.50),
+        0 10px 28px rgba(91,49,220,.42),
+        inset 0 1px 0 rgba(255,255,255,.25);
+
+    filter:brightness(1.08);
+}
+
+#lookupButton:active{
+    transform:translateY(1px) scale(.98);
+
+    box-shadow:
+        0 0 12px rgba(124,76,255,.38),
+        inset 0 2px 5px rgba(0,0,0,.22);
+}
+
+#lookupButton.feel-loading{
+    cursor:wait !important;
+    opacity:.88;
+}
+
+#lookupButton.feel-success{
+    box-shadow:
+        0 0 0 1px rgba(61,230,168,.40),
+        0 0 22px rgba(61,230,168,.30);
+}
+
+#minerStats.feel-refreshing{
+    opacity:.72;
+    transition:opacity .2s ease;
+}
+
+#minerStats.feel-refreshed{
+    animation:feelMinerFlash .55s ease;
+}
+
+@keyframes feelMinerFlash{
+    0%   { filter:brightness(1); }
+    45%  { filter:brightness(1.16); }
+    100% { filter:brightness(1); }
+}
+
+</style>
+
 </head>
 
 
@@ -4319,40 +4396,153 @@ async function refresh(){
 
 
 
+
 $("lookupButton")
 .addEventListener(
     "click",
-    function(){
+    async function(){
+
+        const button =
+            $("lookupButton");
+
+        const input =
+            $("addressInput");
+
+        const statsBox =
+            $("minerStats");
 
         const address =
-            $("addressInput")
-            .value
-            .trim();
+            input.value.trim();
 
 
-        if(!address)
+        if(!address){
+
+            input.focus();
+
+            button.textContent =
+                "Enter Wallet";
+
+            setTimeout(function(){
+                button.textContent =
+                    "Load Miner";
+            }, 1200);
+
+            return;
+        }
+
+
+        if(button.disabled)
             return;
 
 
-        setWallet(address);
+        button.disabled = true;
+
+        button.classList
+            .remove("feel-success");
+
+        button.classList
+            .add("feel-loading");
+
+        button.textContent =
+            "Refreshing...";
 
 
-        $("walletDisplay")
-            .textContent =
-            shortWallet(address);
+        if(statsBox)
+            statsBox.classList
+                .add("feel-refreshing");
 
 
-        $("minerStats")
-            .classList
-            .add("show");
+        try{
+
+            setWallet(address);
 
 
-        refresh();
-        refreshMinerDetail();
+            $("walletDisplay")
+                .textContent =
+                shortWallet(address);
+
+
+            $("minerStats")
+                .classList
+                .add("show");
+
+
+            /*
+             * refresh() fetches /stats using cache:no-store,
+             * therefore every click requests fresh pool data.
+             */
+            await refresh();
+
+
+            /*
+             * Refresh the detailed miner sections too:
+             * workers + payment history.
+             */
+            if(typeof refreshMinerDetail === "function")
+                await refreshMinerDetail();
+
+
+            if(statsBox){
+
+                statsBox.classList
+                    .remove("feel-refreshing");
+
+                statsBox.classList
+                    .add("feel-refreshed");
+
+            }
+
+
+            button.classList
+                .remove("feel-loading");
+
+            button.classList
+                .add("feel-success");
+
+            button.textContent =
+                "Updated ✓";
+
+
+            setTimeout(function(){
+
+                button.textContent =
+                    "Load Miner";
+
+                button.classList
+                    .remove(
+                        "feel-success",
+                        "feel-refreshed"
+                    );
+
+            }, 1100);
+
+        }
+        catch(error){
+
+            console.error(
+                "Miner refresh failed:",
+                error
+            );
+
+            button.textContent =
+                "Try Again";
+
+        }
+        finally{
+
+            button.disabled = false;
+
+            button.classList
+                .remove("feel-loading");
+
+            if(statsBox)
+                statsBox.classList
+                    .remove("feel-refreshing");
+
+        }
 
     }
 );
-
 
 
 $("addressInput")
