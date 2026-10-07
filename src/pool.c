@@ -3460,6 +3460,17 @@ bail:
 static void
 timer_on_template(int fd, short kind, void *ctx)
 {
+    /*
+     * The wallet RPC process may have started but not yet be ready when
+     * the pool starts. fetch_view_key() is safe to call repeatedly:
+     * once sec_view is populated it returns immediately.
+     *
+     * Retrying here prevents a failed startup query_key request from
+     * leaving sec_view unset for the lifetime of the pool process.
+     */
+    if (!*sec_view)
+        fetch_view_key();
+
     struct timeval timeout = {config.template_timeout, 0};
     time_t now = time(NULL);
     time_t offset = difftime(now, template_triggered);
@@ -4128,14 +4139,32 @@ post_hash:
                 block_hex, &sec_view[0], &pub_spend[0], &miner_reward);
         if (reward_rc)
         {
-            log_error("Unable to determine Feelcoin miner reward: %d", reward_rc);
-            free(block_hex);
-            BN_free(hd);
-            BN_free(jd);
-            BN_free(bd);
-            free(block);
-            free(hashing_blob);
-            return;
+            /*
+             * XMR_MISMATCH_ERROR happens after tx.vout[0].amount has
+             * already been extracted into miner_reward.  Do not discard
+             * a valid network-difficulty candidate solely because local
+             * ownership validation failed; the daemon remains the
+             * authoritative consensus validator.
+             *
+             * Other errors may occur before miner_reward is available,
+             * so retain the conservative failure behavior for them.
+             */
+            if (reward_rc == XMR_MISMATCH_ERROR)
+            {
+                log_warn("Pool output ownership validation failed (%d); submitting block anyway",
+                         reward_rc);
+            }
+            else
+            {
+                log_error("Unable to determine Feelcoin miner reward: %d", reward_rc);
+                free(block_hex);
+                BN_free(hd);
+                BN_free(jd);
+                BN_free(bd);
+                free(block);
+                free(hashing_blob);
+                return;
+            }
         }
 
         char body[RPC_BODY_MAX] = {0};
