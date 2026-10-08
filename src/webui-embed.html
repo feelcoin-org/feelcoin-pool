@@ -2462,11 +2462,11 @@ id="recentpayments">
 <div>
 
 <h2>
-Recent Pool Payouts
+Latest 25 Pool Payouts
 </h2>
 
 <p>
-Recent automatic payouts from the Feelcoin mining pool.
+The 25 most recent payments across all miners. Older payments may no longer appear here, even when they were successfully received.
 </p>
 
 </div>
@@ -2688,7 +2688,7 @@ Load your wallet to view workers.
 <div class="section-title">
 <div>
 <h3>Your Recent Payments</h3>
-<p>Recent payouts recorded for this wallet.</p>
+<p>Your 25 most recent recorded payouts. Check Total Paid and Last Payment above for additional payment information.</p>
 </div>
 </div>
 
@@ -3750,13 +3750,19 @@ if(stats.miner_last_payment !== undefined){
 
 
 
+let poolServerTimeOffset = 0;
+
+function poolNowSeconds(){
+    return Math.floor(Date.now() / 1000) + poolServerTimeOffset;
+}
+
 function poolBlockAge(timestamp){
 
     const seconds =
         Math.max(
             0,
             Math.floor(
-                Date.now() / 1000 -
+                poolNowSeconds() -
                 Number(timestamp || 0)
             )
         );
@@ -4025,6 +4031,37 @@ async function refreshPoolBlocks(){
         const data =
             await response.json();
 
+        if(
+            Array.isArray(data.blocks) &&
+            data.blocks.length &&
+            Number(data.blocks[0].timestamp || 0)
+        ){
+            const newestBlockTime =
+                Number(data.blocks[0].timestamp);
+
+            const localNow =
+                Math.floor(Date.now() / 1000);
+
+            /*
+             * Only correct obvious client-clock skew.
+             * A newest block can naturally be a few minutes old, so
+             * use the server Date header when available.
+             */
+            const serverDate =
+                response.headers.get("Date");
+
+            if(serverDate){
+                const parsed =
+                    Date.parse(serverDate);
+
+                if(Number.isFinite(parsed)){
+                    poolServerTimeOffset =
+                        Math.floor(parsed / 1000) -
+                        localNow;
+                }
+            }
+        }
+
         renderPoolBlocks(data);
 
     }
@@ -4098,7 +4135,7 @@ async function refreshPoolPayments(){
 
             body.innerHTML =
                 '<tr><td colspan="3" class="feel-miner-empty">' +
-                'No payouts recorded yet.' +
+                'No recent pool payments available. This table shows only the latest 25 payments.' +
                 '</td></tr>';
 
             return;
@@ -4288,7 +4325,7 @@ async function refreshMinerPayments(){
 
             target.innerHTML =
                 '<div class="feel-miner-empty">' +
-                'No payments recorded for this wallet yet.' +
+                'No payments found in the recent history for this wallet. Check Total Paid and Last Payment above before concluding that no rewards were received.' +
                 '</div>';
 
             return;
