@@ -94,6 +94,11 @@ int get_hashing_blob(const unsigned char *input, const size_t in_size,
     blobdata blob = get_block_hashing_blob(b);
     *out_size = blob.length();
     *output = (unsigned char*) malloc(*out_size);
+    if (!*output)
+    {
+        *out_size = 0;
+        return XMR_PARSE_ERROR;
+    }
     memcpy(*output, blob.data(), *out_size);
     return XMR_NO_ERROR;
 }
