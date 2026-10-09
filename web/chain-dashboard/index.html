@@ -1687,6 +1687,23 @@ code {
 
 </style>
 
+
+<style id="feel-live-earnings-style">
+#feel-earnings-calculator{margin-top:18px}
+.feel-earnings-input{max-width:540px;display:grid;gap:9px}
+.feel-earnings-input label{font-size:13px;font-weight:700}
+.feel-earnings-controls{display:flex;gap:9px}
+.feel-earnings-controls input,.feel-earnings-controls select{background:#09111f;color:#eef4ff;border:1px solid #455266;border-radius:10px;padding:12px;min-width:0;font:inherit}
+.feel-earnings-controls input{flex:1;width:100%}
+.feel-earnings-results{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:20px 0 14px}
+.feel-earnings-results>div{padding:16px;background:rgba(7,14,24,.55);border:1px solid rgba(255,255,255,.09);border-radius:14px}
+.feel-earnings-results span{display:block;font-size:12px;color:#aebad0}
+.feel-earnings-results strong{display:block;margin-top:9px;font-size:clamp(16px,2vw,24px);color:#dabb76;overflow-wrap:anywhere}
+.feel-earnings-status,.feel-earnings-disclaimer,.feel-earnings-assumptions{font-size:12px;color:#aebad0;line-height:1.6}
+.feel-earnings-assumptions summary{cursor:pointer;font-size:13px;margin-bottom:8px}
+@media(max-width:620px){.feel-earnings-results{grid-template-columns:1fr}}
+</style>
+
 </head>
 
 
@@ -2043,6 +2060,16 @@ Active miners
 </div>
 
 
+</section>
+
+
+<section class="card section" id="feel-earnings-calculator" aria-labelledby="feelEarningsHeading">
+  <div class="section-title"><div><h2 id="feelEarningsHeading">FEEL Mining Earnings Calculator</h2><p>Estimate your mining rewards using verified live network and Pool data.</p></div></div>
+  <div class="feel-earnings-input"><label for="feelEarningsHashrate">Your hashrate</label><div class="feel-earnings-controls"><input id="feelEarningsHashrate" type="number" min="0" step="any" value="1000" inputmode="decimal" aria-label="Your mining hashrate"><select id="feelEarningsUnit" aria-label="Hashrate unit"><option value="1">H/s</option><option value="1000">kH/s</option><option value="1000000">MH/s</option></select></div></div>
+  <div class="feel-earnings-results" aria-live="polite"><div><span>Per day</span><strong id="feelEarningsDay">—</strong></div><div><span>Per week</span><strong id="feelEarningsWeek">—</strong></div><div><span>Per month (30d)</span><strong id="feelEarningsMonth">—</strong></div></div>
+  <p class="feel-earnings-status" id="feelEarningsStatus">Loading verified network data…</p>
+  <details class="feel-earnings-assumptions"><summary>Live assumptions</summary><div id="feelEarningsAssumptions">Waiting for verified data.</div></details>
+  <p class="feel-earnings-disclaimer">Estimates, not guaranteed payments. Uses a recent verified main-chain Pool miner-output reward (the protocol's 2% treasury allocation is already excluded), minus the Pool fee. Pool luck, PPLNS, changing difficulty and rewards, uptime, fees and payout thresholds affect actual earnings. Transaction fees in the sampled block may vary.</p>
 </section>
 
 <section class="feel-network-status" id="feelNetworkStatus">
@@ -4892,6 +4919,53 @@ document.addEventListener("DOMContentLoaded", function () {
 })();
 
 </script>
+
+<script id="feel-live-earnings-script">
+(function(){
+"use strict";
+const byId=id=>document.getElementById(id);
+const fmt=v=>Number(v).toLocaleString("en-US",{maximumFractionDigits:4})+" FEEL";
+const state={inputs:null};
+function hide(reason){state.inputs=null;for(const id of ["feelEarningsDay","feelEarningsWeek","feelEarningsMonth"])byId(id).textContent="—";byId("feelEarningsStatus").textContent="Estimate unavailable: "+reason;byId("feelEarningsAssumptions").textContent="Verified data unavailable.";}
+function recalc(){
+ if(!state.inputs)return;
+ const raw=Number(byId("feelEarningsHashrate").value),unit=Number(byId("feelEarningsUnit").value);
+ if(!Number.isFinite(raw)||raw<0||!Number.isFinite(unit)||raw*unit>1e16){hide("enter a valid nonnegative hashrate");return;}
+ const {network,reward,fee,target,height}=state.inputs;
+ const daily=raw*unit/network*(86400/target)*reward*(1-fee);
+ if(!Number.isFinite(daily)||daily<0){hide("invalid estimate");return;}
+ byId("feelEarningsDay").textContent=fmt(daily);
+ byId("feelEarningsWeek").textContent=fmt(daily*7);
+ byId("feelEarningsMonth").textContent=fmt(daily*30);
+ byId("feelEarningsStatus").textContent="Live estimate · verified miner-output reward from block #"+height;
+ byId("feelEarningsAssumptions").textContent="Network: "+network.toLocaleString("en-US")+" H/s · miner-output: "+reward.toFixed(8)+" FEEL/block · treasury: already deducted at protocol level (2% of subsidy) · Pool fee: "+(fee*100).toFixed(2)+"% · assumed block target: "+target+"s.";
+}
+async function refresh(){
+ try{
+ const [sr,ar,nr]=await Promise.all([fetch("/stats",{cache:"no-store"}),fetch("/api/pool-chain-audit",{cache:"no-store"}),fetch("/network-status.json",{cache:"no-store"})]);
+ if(!sr.ok||!ar.ok||!nr.ok)throw Error("live feeds unavailable");
+ const [stats,audit,status]=await Promise.all([sr.json(),ar.json(),nr.json()]);
+ if(audit.source!=="canonical-chain-audit-v1"||!Array.isArray(audit.blocks))throw Error("chain verification unavailable");
+ const age=Date.now()/1000-Number(audit.checked_at);
+ if(!Number.isFinite(age)||age< -60||age>90)throw Error("chain audit stale");
+ const network=Number(stats.network_hashrate),fee=Number(stats.pool_fee),target=Number(status.network&&status.network.target_seconds),tip=Number(audit.chain_height);
+ if(!Number.isFinite(network)||network<=0||!Number.isFinite(fee)||fee<0||fee>=1||!Number.isFinite(target)||target<=0||target>3600||!Number.isSafeInteger(tip)||tip<0)throw Error("network, fee or target unavailable");
+ const candidates=audit.blocks.filter(b=>["maturing","confirmed"].includes(b.chain_status)&&Number.isSafeInteger(Number(b.height))&&tip-Number(b.height)>=0&&tip-Number(b.height)<=20&&Number.isFinite(Number(b.reward))&&Number(b.reward)>0);
+ candidates.sort((a,b)=>Number(b.height)-Number(a.height));
+ if(!candidates.length)throw Error("no recent verified Pool block reward; retry later");
+ // In V4, block.reward stores coinbase output 0 (miner/pool), not gross coinbase sum.
+ const block=candidates[0];const reward=Number(block.reward)/1e12;
+ if(!Number.isFinite(reward)||reward<=0||reward>1e12)throw Error("invalid miner-output reward");
+ state.inputs={network,reward,fee,target,height:Number(block.height)};
+ recalc();
+ }catch(e){hide(e.message||"unknown live-data error");}
+}
+byId("feelEarningsHashrate").addEventListener("input",recalc);
+byId("feelEarningsUnit").addEventListener("change",recalc);
+refresh();setInterval(refresh,30000);
+})();
+</script>
+
 </body>
 </html>
 
