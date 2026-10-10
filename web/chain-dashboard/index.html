@@ -1688,111 +1688,77 @@ code {
 </style>
 
 
+<style id="feel-live-earnings-style">
+#feel-earnings-calculator{margin-top:18px}
+.feel-earnings-input{max-width:540px;display:grid;gap:9px}
+.feel-earnings-input label{font-size:13px;font-weight:700}
+.feel-earnings-controls{display:flex;gap:9px}
+.feel-earnings-controls input,.feel-earnings-controls select{background:#09111f;color:#eef4ff;border:1px solid #455266;border-radius:10px;padding:12px;min-width:0;font:inherit}
+.feel-earnings-controls input{flex:1;width:100%}
+.feel-earnings-results{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:20px 0 14px}
+.feel-earnings-results>div{padding:16px;background:rgba(7,14,24,.55);border:1px solid rgba(255,255,255,.09);border-radius:14px}
+.feel-earnings-results span{display:block;font-size:12px;color:#aebad0}
+.feel-earnings-results strong{display:block;margin-top:9px;font-size:clamp(16px,2vw,24px);color:#dabb76;overflow-wrap:anywhere}
+.feel-earnings-status,.feel-earnings-disclaimer,.feel-earnings-assumptions{font-size:12px;color:#aebad0;line-height:1.6}
+.feel-earnings-assumptions summary{cursor:pointer;font-size:13px;margin-bottom:8px}
+@media(max-width:620px){.feel-earnings-results{grid-template-columns:1fr}}
+</style>
+
+
 <style>
-/* FEELCOIN MOBILE NAV V1 */
-.feel-mobile-menu { display:none; }
+/* FEELCOIN V4 MOBILE MENU */
+.fc-mobile-menu{display:none}
 
-@media(max-width:950px) {
-  .topbar { flex-wrap:wrap; }
+@media(max-width:950px){
+  .topbar{flex-wrap:wrap}
 
-  .topbar > nav.nav {
+  .topbar > nav.nav{
     display:none!important;
   }
 
-  .feel-mobile-menu {
-    display:block;
-    order:3;
+  .topbar > .fc-mobile-menu{
+    display:block!important;
     width:100%;
+    order:3;
   }
 
-  .feel-mobile-menu summary {
+  .fc-mobile-menu summary{
+    display:block;
     cursor:pointer;
     list-style:none;
-    padding:12px 16px;
-    border:1px solid rgba(218,174,82,.35);
+    padding:13px 18px;
     border-radius:12px;
-    background:#111a2b;
+    background:#141f32;
+    border:1px solid rgba(218,174,82,.35);
     color:#e9bf65;
     font-weight:700;
+    text-align:center;
   }
 
-  .feel-mobile-menu summary::-webkit-details-marker {
+  .fc-mobile-menu summary::-webkit-details-marker{
     display:none;
   }
 
-  .feel-mobile-links {
+  .fc-mobile-links{
     display:grid;
     grid-template-columns:repeat(2,minmax(0,1fr));
     gap:8px;
     margin-top:10px;
   }
 
-  .feel-mobile-links a {
+  .fc-mobile-links a{
     display:block;
     padding:12px;
+    background:#111a2b;
     border:1px solid rgba(255,255,255,.09);
     border-radius:10px;
-    background:#111a2b;
-    color:#eef4ff;
     text-align:center;
     white-space:normal;
   }
 }
 
-@media(max-width:420px) {
-  .feel-mobile-links { grid-template-columns:1fr; }
-}
-</style>
-
-
-<style>
-/* FEELCOIN POOL MOBILE MENU FIX V2 */
-
-@media(max-width:950px){
-
-  .topbar{
-    display:flex;
-    flex-wrap:wrap;
-    align-items:center;
-  }
-
-  .topbar > nav.nav{
-    display:none !important;
-  }
-
-  .topbar > .feel-mobile-menu{
-    display:block !important;
-    width:100%;
-    order:3;
-  }
-
-  .feel-mobile-menu summary{
-    display:block;
-    cursor:pointer;
-    padding:13px 18px;
-    border-radius:12px;
-    border:1px solid rgba(218,174,82,.35);
-    background:#141f32;
-    color:#e9bf65;
-    text-align:center;
-    font-weight:700;
-  }
-
-  .feel-mobile-menu:not([open]) .feel-mobile-links{
-    display:none !important;
-  }
-
-  .feel-mobile-menu[open] .feel-mobile-links{
-    display:grid !important;
-    grid-template-columns:repeat(2,minmax(0,1fr));
-    gap:8px;
-    margin-top:10px;
-  }
-
-}
-
 @media(max-width:420px){
-  .feel-mobile-menu[open] .feel-mobile-links{
+  .fc-mobile-links{
     grid-template-columns:1fr;
   }
 }
@@ -1874,13 +1840,7 @@ rel="noopener noreferrer">
 GitHub
 </a>
 </nav>
-
-<details class="feel-mobile-menu">
-  <summary aria-label="Toggle navigation">
-    &#9776; <span>Menu</span>
-  </summary>
-  <div class="feel-mobile-links">
-    <a href="#dashboard">Dashboard</a>
+<details class="fc-mobile-menu"><summary aria-label="Toggle navigation">&#9776; Menu</summary><div class="fc-mobile-links"><a href="#dashboard">Dashboard</a>
 <a href="#mining">Start Mining</a>
 <a href="#miner">Miner</a>
 <a href="#poolinfo">Pool Info</a>
@@ -1914,10 +1874,7 @@ Download Miner
 target="_blank"
 rel="noopener noreferrer">
 GitHub
-</a>
-  </div>
-</details>
-
+</a></div></details>
 
 
 <div class="status">
@@ -2200,6 +2157,16 @@ Active miners
 
 </section>
 
+
+<section class="card section" id="feel-earnings-calculator" aria-labelledby="feelEarningsHeading">
+  <div class="section-title"><div><h2 id="feelEarningsHeading">FEEL Mining Earnings Calculator</h2><p>Estimate your mining rewards using verified live network and Pool data.</p></div></div>
+  <div class="feel-earnings-input"><label for="feelEarningsHashrate">Your hashrate</label><div class="feel-earnings-controls"><input id="feelEarningsHashrate" type="number" min="0" step="any" value="1000" inputmode="decimal" aria-label="Your mining hashrate"><select id="feelEarningsUnit" aria-label="Hashrate unit"><option value="1">H/s</option><option value="1000">kH/s</option><option value="1000000">MH/s</option></select></div></div>
+  <div class="feel-earnings-results" aria-live="polite"><div><span>Per day</span><strong id="feelEarningsDay">—</strong></div><div><span>Per week</span><strong id="feelEarningsWeek">—</strong></div><div><span>Per month (30d)</span><strong id="feelEarningsMonth">—</strong></div></div>
+  <p class="feel-earnings-status" id="feelEarningsStatus">Loading verified network data…</p>
+  <details class="feel-earnings-assumptions"><summary>Live assumptions</summary><div id="feelEarningsAssumptions">Waiting for verified data.</div></details>
+  <p class="feel-earnings-disclaimer">Estimates, not guaranteed payments. Uses a recent verified main-chain Pool miner-output reward (the protocol's 2% treasury allocation is already excluded), minus the Pool fee. Pool luck, PPLNS, changing difficulty and rewards, uptime, fees and payout thresholds affect actual earnings. Transaction fees in the sampled block may vary.</p>
+</section>
+
 <section class="feel-network-status" id="feelNetworkStatus">
 
 <div class="feel-network-status-card">
@@ -2267,6 +2234,13 @@ Waiting for network data...
 
 
 <style id="feel-pool-blocks-style">
+/* feel-mainchain-view-toggle-v1: client-side display only */
+.feel-block-view-controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.feel-block-view-btn{border:1px solid rgba(255,255,255,.19);background:rgba(255,255,255,.055);color:#dce7f5;padding:10px 15px;border-radius:11px;font-size:12px;font-weight:700;cursor:pointer;transition:background .2s,border-color .2s}
+.feel-block-view-btn:hover,.feel-block-view-btn:focus-visible{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.34)}
+.feel-block-view-btn:focus-visible{outline:2px solid #dbb568;outline-offset:3px}
+@media(max-width:650px){.feel-block-view-controls{width:100%}.feel-block-view-btn{width:100%}}
+
 
 .feel-pool-blocks{
     margin-top:18px;
@@ -2379,6 +2353,22 @@ Waiting for network data...
 .feel-block-status.orphaned{
     color:#ff6b7a;
     background:rgba(255,107,122,.10);
+}
+
+.feel-block-status.maturing{
+    color:#38d996;
+    background:rgba(56,217,150,.10);
+}
+.feel-block-status.alternative{
+    color:#ffc857;
+    background:rgba(255,200,87,.10);
+}
+.feel-block-status.unverified{
+    color:#b1bdce;
+    background:rgba(177,189,206,.10);
+}
+.feel-chain-audit-warning{
+    color:#ffc857;
 }
 
 .feel-blocks-note{
@@ -2508,9 +2498,13 @@ Pool Block Performance
 </h2>
 
 <p>
-Live PPLNS blocks found by the official Feelcoin mining pool.
+Recent blocks verified against the current Feelcoin main chain. The full candidate history is available on request.
 </p>
 
+</div>
+
+<div class="feel-block-view-controls">
+<button id="feelToggleCandidates" class="feel-block-view-btn" type="button" aria-pressed="false" aria-controls="feelPoolBlocksBody">Show all candidates</button>
 </div>
 
 </div>
@@ -2519,12 +2513,13 @@ Live PPLNS blocks found by the official Feelcoin mining pool.
 <div class="feel-blocks-summary">
 
 <div class="feel-block-summary">
-<div class="label">Blocks Found</div>
+<div class="label" title="Only main-chain matches in the most recent audited sample, not an all-time total">Main-chain matches (recent)</div>
 <strong id="feelBlocksFound">—</strong>
+<div class="small" id="feelBlocksSampleNote">Checking recent candidates...</div>
 </div>
 
 <div class="feel-block-summary">
-<div class="label">Last Pool Block</div>
+<div class="label">Latest Main-chain Match</div>
 <strong id="feelLastBlock">—</strong>
 </div>
 
@@ -2571,11 +2566,13 @@ Loading recent pool blocks...
 </div>
 
 
+<div id="feelBlockAuditSummary" class="feel-blocks-note" aria-live="polite">
+Checking main-chain status for recent block candidates...
+</div>
 <div class="feel-blocks-note">
-PPLNS rewards are distributed according to miners' contribution
-within the pool share window. Newly found blocks remain pending
-until the 60-block confirmation depth is reached. Orphaned blocks
-are displayed transparently and are not eligible for payout.
+Main-chain matches are verified only for the latest sampled candidates, not all-time pool wins.
+Chain reorganizations can change a block's status before final maturity.
+This display does not change mining, PPLNS accounting, payouts, or stored block records.
 </div>
 
 </section>
@@ -3755,32 +3752,8 @@ function applyStats(stats){
             );
 
 
-    if(
-        stats.pool_blocks_found !== undefined &&
-        $("feelBlocksFound")
-    )
-        $("feelBlocksFound").textContent =
-            formatNumber(
-                stats.pool_blocks_found
-            );
-
-
-    if(
-        stats.last_block_found !== undefined &&
-        $("feelLastBlock")
-    ){
-
-        const ts =
-            Number(
-                stats.last_block_found
-            );
-
-        $("feelLastBlock").textContent =
-            ts > 0
-                ? poolBlockAge(ts)
-                : "No blocks yet";
-
-    }
+    // All-time Pool candidate counters are NOT verified chain-win counts.
+    // Main-chain metrics are updated only by the read-only audit response.
 
 
     if(stats.pool_port !== undefined)
@@ -3960,283 +3933,173 @@ function poolRewardFeel(value){
 }
 
 
-function renderPoolBlocks(data){
+// Client-side view filter. Never edits Pool records, payouts, or the chain auditor.
+let poolShowAllCandidates=false;
+let latestPoolAudit={blocks:[]};
+let latestPoolAuditVerified=false;
 
-    const body =
-        $("feelPoolBlocksBody");
-
-    if(!body)
-        return;
-
-    const blocks =
-        Array.isArray(data.blocks)
-            ? data.blocks
-            : [];
-
-    body.innerHTML = "";
-
-    if(!blocks.length){
-
-        const row =
-            document.createElement("tr");
-
-        const cell =
-            document.createElement("td");
-
-        cell.colSpan = 6;
-        cell.className =
-            "feel-blocks-empty";
-
-        cell.textContent =
-            "No pool blocks recorded yet.";
-
-        row.appendChild(cell);
-        body.appendChild(row);
-
-        return;
-    }
-
-    blocks.forEach(function(block){
-
-        const row =
-            document.createElement("tr");
-
-
-        const heightCell =
-            document.createElement("td");
-
-        heightCell.className =
-            "feel-block-height";
-
-        const heightLink =
-            document.createElement("a");
-
-        heightLink.href =
-            "https://explorer.feelcoin.org/?q=" +
-            encodeURIComponent(
-                block.height
-            );
-
-        heightLink.target =
-            "_blank";
-
-        heightLink.rel =
-            "noopener noreferrer";
-
-        heightLink.textContent =
-            formatNumber(block.height);
-
-        heightLink.title =
-            "Open Feelcoin Explorer";
-
-        heightCell.appendChild(
-            heightLink
-        );
-
-
-        const ageCell =
-            document.createElement("td");
-
-        ageCell.textContent =
-            poolBlockAge(
-                block.timestamp
-            );
-
-
-        const hashCell =
-            document.createElement("td");
-
-        hashCell.className =
-            "feel-block-hash";
-
-        const hashLink =
-            document.createElement("a");
-
-        hashLink.href =
-            "https://explorer.feelcoin.org/?q=" +
-            encodeURIComponent(
-                block.hash
-            );
-
-        hashLink.target =
-            "_blank";
-
-        hashLink.rel =
-            "noopener noreferrer";
-
-        hashLink.textContent =
-            shortBlockHash(
-                block.hash
-            );
-
-        hashLink.title =
-            block.hash || "";
-
-        hashCell.appendChild(
-            hashLink
-        );
-
-
-        const rewardCell =
-            document.createElement("td");
-
-        rewardCell.textContent =
-            poolRewardFeel(
-                block.reward
-            );
-
-
-        const confirmationsCell =
-            document.createElement("td");
-
-        const confirmations =
-            Number(
-                block.confirmations || 0
-            );
-
-        const required =
-            Number(
-                block.required_confirmations || 60
-            );
-
-        confirmationsCell.textContent =
-            block.status === "orphaned"
-                ? "—"
-                : Math.min(
-                    confirmations,
-                    required
-                  ) +
-                  " / " +
-                  required;
-
-
-        const statusCell =
-            document.createElement("td");
-
-        const badge =
-            document.createElement("span");
-
-        const status =
-            String(
-                block.status || "pending"
-            ).toLowerCase();
-
-        badge.className =
-            "feel-block-status " +
-            (
-                status === "confirmed"
-                    ? "confirmed"
-                    : status === "orphaned"
-                    ? "orphaned"
-                    : "pending"
-            );
-
-        badge.textContent =
-            status === "confirmed"
-                ? "Confirmed"
-                : status === "orphaned"
-                ? "Orphaned"
-                : "Pending";
-
-        statusCell.appendChild(
-            badge
-        );
-
-
-        row.appendChild(heightCell);
-        row.appendChild(ageCell);
-        row.appendChild(hashCell);
-        row.appendChild(rewardCell);
-        row.appendChild(confirmationsCell);
-        row.appendChild(statusCell);
-
-        body.appendChild(row);
-
+function poolMainChainBlocks(data){
+    return (Array.isArray(data.blocks)?data.blocks:[]).filter(function(block){
+        return block.chain_status==="maturing"||block.chain_status==="confirmed";
     });
-
 }
 
+function renderPoolBlocks(data){
+    const body=$("feelPoolBlocksBody");
+    if(!body) return;
+    const all=Array.isArray(data.blocks)?data.blocks:[];
+    const blocks=poolShowAllCandidates?all:poolMainChainBlocks(data);
+    body.replaceChildren();
+    if(!blocks.length){
+        const tr=document.createElement("tr");
+        const td=document.createElement("td");
+        td.colSpan=6;
+        td.className="feel-blocks-empty";
+        td.textContent=poolShowAllCandidates
+          ?"No recent pool candidates recorded."
+          :(!latestPoolAuditVerified
+            ?"Main-chain verification unavailable. Use Show all candidates to inspect unverified records."
+            :"No current main-chain matches in the most recent audited sample. Use Show all candidates for full details.");
+        tr.appendChild(td);
+        body.appendChild(tr);
+        return;
+    }
+    const labels={
+        confirmed:"Confirmed",
+        maturing:"Main chain · Maturing",
+        alternative:"Alternative candidate",
+        orphaned:"Orphaned",
+        unverified:"Unverified"
+    };
+    blocks.forEach(function(block){
+        const row=document.createElement("tr");
+        const heightCell=document.createElement("td");
+        heightCell.className="feel-block-height";
+        const heightLink=document.createElement("a");
+        heightLink.href="https://explorer.feelcoin.org/?q="+encodeURIComponent(block.height);
+        heightLink.target="_blank";
+        heightLink.rel="noopener noreferrer";
+        heightLink.textContent=formatNumber(block.height);
+        heightLink.title="Open Feelcoin Explorer";
+        heightCell.appendChild(heightLink);
+
+        const ageCell=document.createElement("td");
+        ageCell.textContent=poolBlockAge(block.timestamp);
+
+        const hashCell=document.createElement("td");
+        hashCell.className="feel-block-hash";
+        const hashLink=document.createElement("a");
+        hashLink.href="https://explorer.feelcoin.org/?q="+encodeURIComponent(block.hash);
+        hashLink.target="_blank";
+        hashLink.rel="noopener noreferrer";
+        hashLink.textContent=shortBlockHash(block.hash);
+        hashLink.title=block.hash||"";
+        hashCell.appendChild(hashLink);
+
+        const rewardCell=document.createElement("td");
+        rewardCell.textContent=poolRewardFeel(block.reward);
+        const confirmationsCell=document.createElement("td");
+        const required=Number(block.required_confirmations||60);
+        const status=Object.hasOwn(labels,block.chain_status)
+          ?block.chain_status:"unverified";
+        const verifiedOnChain=status==="maturing"||status==="confirmed";
+        const count=Number(block.chain_confirmations);
+        confirmationsCell.textContent=verifiedOnChain&&block.chain_confirmations!==null&&Number.isFinite(count)
+          ?Math.min(Math.max(0,count),required)+" / "+required
+          :"—";
+        if(!verifiedOnChain){
+            confirmationsCell.title="Height difference is not block confirmation evidence.";
+        }
+
+        const statusCell=document.createElement("td");
+        const badge=document.createElement("span");
+        badge.className="feel-block-status "+status;
+        badge.textContent=labels[status];
+        if(status==="alternative") badge.title="Candidate differs from the current main chain. A chain reorganization could change its status.";
+        if(status==="unverified") badge.title="Live main-chain verification is temporarily unavailable.";
+        statusCell.appendChild(badge);
+        row.append(heightCell,ageCell,hashCell,rewardCell,confirmationsCell,statusCell);
+        body.appendChild(row);
+    });
+}
+
+function showPoolAuditSummary(data,verified){
+    const el=$("feelBlockAuditSummary");
+    const metric=$("feelBlocksFound");
+    const sample=$("feelBlocksSampleNote");
+    const last=$("feelLastBlock");
+    const blocks=Array.isArray(data&&data.blocks)?data.blocks:[];
+    const onChain=poolMainChainBlocks({blocks:blocks});
+    const count=Number.isInteger(data&&data.sample_count)?data.sample_count:blocks.length;
+    if(metric) metric.textContent=verified?formatNumber(onChain.length):"—";
+    if(sample) sample.textContent=verified?"within latest "+count+" candidates":"Verification unavailable";
+    if(last){
+        const timestamps=onChain.map(b=>Number(b.timestamp)).filter(v=>Number.isFinite(v)&&v>0);
+        last.textContent=verified?(timestamps.length?poolBlockAge(Math.max(...timestamps)):"None in sample"):"—";
+    }
+    if(!el) return;
+    el.classList.toggle("feel-chain-audit-warning",!verified);
+    if(!verified){
+        el.textContent="Main-chain verification unavailable. No unverified candidates are presented as main-chain blocks.";
+        return;
+    }
+    const checked=Number(data.checked_at);
+    const timestamp=Number.isFinite(checked)?" Checked "+new Date(checked*1000).toLocaleTimeString()+".":"";
+    if(poolShowAllCandidates){
+        const counts=data.counts||{};
+        const different=Number(counts.alternative||0)+Number(counts.orphaned||0);
+        const unknown=Number(counts.unverified||0);
+        el.textContent="All "+count+" recent candidates: "+onChain.length+" on the current main chain, "+different+" alternative/orphaned, "+unknown+" unverified."+timestamp;
+    }else{
+        el.textContent="Showing "+onChain.length+" main-chain matches from the latest "+count+" recorded candidates (not the all-time number of blocks won)."+timestamp;
+    }
+}
+
+function setPoolBlockView(showAll){
+    poolShowAllCandidates=Boolean(showAll);
+    const button=$("feelToggleCandidates");
+    if(button){
+        button.textContent=poolShowAllCandidates?"Main chain only":"Show all candidates";
+        button.setAttribute("aria-pressed",String(poolShowAllCandidates));
+    }
+    renderPoolBlocks(latestPoolAudit);
+    showPoolAuditSummary(latestPoolAudit,latestPoolAuditVerified);
+}
+
+$("feelToggleCandidates").addEventListener("click",function(){
+    setPoolBlockView(!poolShowAllCandidates);
+});
 
 async function refreshPoolBlocks(){
-
     try{
-
-        const response =
-            await fetch(
-                "/blocks",
-                {
-                    cache:"no-store"
-                }
-            );
-
-        if(!response.ok)
-            throw new Error(
-                "HTTP " +
-                response.status
-            );
-
-        const data =
-            await response.json();
-
-        if(
-            Array.isArray(data.blocks) &&
-            data.blocks.length &&
-            Number(data.blocks[0].timestamp || 0)
-        ){
-            const newestBlockTime =
-                Number(data.blocks[0].timestamp);
-
-            const localNow =
-                Math.floor(Date.now() / 1000);
-
-            /*
-             * Only correct obvious client-clock skew.
-             * A newest block can naturally be a few minutes old, so
-             * use the server Date header when available.
-             */
-            const serverDate =
-                response.headers.get("Date");
-
-            if(serverDate){
-                const parsed =
-                    Date.parse(serverDate);
-
-                if(Number.isFinite(parsed)){
-                    poolServerTimeOffset =
-                        Math.floor(parsed / 1000) -
-                        localNow;
-                }
-            }
+        const response=await fetch("/api/pool-chain-audit",{cache:"no-store"});
+        if(!response.ok) throw new Error("Audit HTTP "+response.status);
+        const data=await response.json();
+        if(!Array.isArray(data.blocks)||data.source!=="canonical-chain-audit-v1")
+            throw new Error("Unexpected audit response");
+        const age=Date.now()/1000-Number(data.checked_at);
+        if(!Number.isFinite(age)||age < -60||age > 90)
+            throw new Error("Stale chain verification");
+        latestPoolAudit=data;
+        latestPoolAuditVerified=data.chain_height!==null && data.chain_height!==undefined;
+        renderPoolBlocks(latestPoolAudit);
+        showPoolAuditSummary(latestPoolAudit,latestPoolAuditVerified);
+    }catch(error){
+        console.warn("Canonical chain audit:",error);
+        try{
+            const response=await fetch("/blocks",{cache:"no-store"});
+            if(!response.ok) throw new Error("Pool blocks unavailable");
+            const fallback=await response.json();
+            latestPoolAudit={blocks:(Array.isArray(fallback.blocks)?fallback.blocks:[])
+                .map(b=>({...b,chain_status:"unverified",chain_confirmations:null}))};
+        }catch(fallbackError){
+            latestPoolAudit={blocks:[]};
         }
-
-        renderPoolBlocks(data);
-
+        latestPoolAuditVerified=false;
+        renderPoolBlocks(latestPoolAudit);
+        showPoolAuditSummary(latestPoolAudit,false);
     }
-    catch(error){
-
-        const body =
-            $("feelPoolBlocksBody");
-
-        if(body){
-
-            body.innerHTML =
-                '<tr>' +
-                '<td colspan="6" class="feel-blocks-empty">' +
-                'Unable to load pool block history.' +
-                '</td>' +
-                '</tr>';
-
-        }
-
-        console.warn(
-            "Pool block history:",
-            error
-        );
-
-    }
-
 }
-
 
 function paymentAge(timestamp){
 
@@ -5151,6 +5014,53 @@ document.addEventListener("DOMContentLoaded", function () {
 })();
 
 </script>
+
+<script id="feel-live-earnings-script">
+(function(){
+"use strict";
+const byId=id=>document.getElementById(id);
+const fmt=v=>Number(v).toLocaleString("en-US",{maximumFractionDigits:4})+" FEEL";
+const state={inputs:null};
+function hide(reason){state.inputs=null;for(const id of ["feelEarningsDay","feelEarningsWeek","feelEarningsMonth"])byId(id).textContent="—";byId("feelEarningsStatus").textContent="Estimate unavailable: "+reason;byId("feelEarningsAssumptions").textContent="Verified data unavailable.";}
+function recalc(){
+ if(!state.inputs)return;
+ const raw=Number(byId("feelEarningsHashrate").value),unit=Number(byId("feelEarningsUnit").value);
+ if(!Number.isFinite(raw)||raw<0||!Number.isFinite(unit)||raw*unit>1e16){hide("enter a valid nonnegative hashrate");return;}
+ const {network,reward,fee,target,height}=state.inputs;
+ const daily=raw*unit/network*(86400/target)*reward*(1-fee);
+ if(!Number.isFinite(daily)||daily<0){hide("invalid estimate");return;}
+ byId("feelEarningsDay").textContent=fmt(daily);
+ byId("feelEarningsWeek").textContent=fmt(daily*7);
+ byId("feelEarningsMonth").textContent=fmt(daily*30);
+ byId("feelEarningsStatus").textContent="Live estimate · verified miner-output reward from block #"+height;
+ byId("feelEarningsAssumptions").textContent="Network: "+network.toLocaleString("en-US")+" H/s · miner-output: "+reward.toFixed(8)+" FEEL/block · treasury: already deducted at protocol level (2% of subsidy) · Pool fee: "+(fee*100).toFixed(2)+"% · assumed block target: "+target+"s.";
+}
+async function refresh(){
+ try{
+ const [sr,ar,nr]=await Promise.all([fetch("/stats",{cache:"no-store"}),fetch("/api/pool-chain-audit",{cache:"no-store"}),fetch("/network-status.json",{cache:"no-store"})]);
+ if(!sr.ok||!ar.ok||!nr.ok)throw Error("live feeds unavailable");
+ const [stats,audit,status]=await Promise.all([sr.json(),ar.json(),nr.json()]);
+ if(audit.source!=="canonical-chain-audit-v1"||!Array.isArray(audit.blocks))throw Error("chain verification unavailable");
+ const age=Date.now()/1000-Number(audit.checked_at);
+ if(!Number.isFinite(age)||age< -60||age>90)throw Error("chain audit stale");
+ const network=Number(stats.network_hashrate),fee=Number(stats.pool_fee),target=Number(status.network&&status.network.target_seconds),tip=Number(audit.chain_height);
+ if(!Number.isFinite(network)||network<=0||!Number.isFinite(fee)||fee<0||fee>=1||!Number.isFinite(target)||target<=0||target>3600||!Number.isSafeInteger(tip)||tip<0)throw Error("network, fee or target unavailable");
+ const candidates=audit.blocks.filter(b=>["maturing","confirmed"].includes(b.chain_status)&&Number.isSafeInteger(Number(b.height))&&tip-Number(b.height)>=0&&tip-Number(b.height)<=20&&Number.isFinite(Number(b.reward))&&Number(b.reward)>0);
+ candidates.sort((a,b)=>Number(b.height)-Number(a.height));
+ if(!candidates.length)throw Error("no recent verified Pool block reward; retry later");
+ // In V4, block.reward stores coinbase output 0 (miner/pool), not gross coinbase sum.
+ const block=candidates[0];const reward=Number(block.reward)/1e12;
+ if(!Number.isFinite(reward)||reward<=0||reward>1e12)throw Error("invalid miner-output reward");
+ state.inputs={network,reward,fee,target,height:Number(block.height)};
+ recalc();
+ }catch(e){hide(e.message||"unknown live-data error");}
+}
+byId("feelEarningsHashrate").addEventListener("input",recalc);
+byId("feelEarningsUnit").addEventListener("change",recalc);
+refresh();setInterval(refresh,30000);
+})();
+</script>
+
 </body>
 </html>
 
