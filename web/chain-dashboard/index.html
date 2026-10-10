@@ -1704,6 +1704,66 @@ code {
 @media(max-width:620px){.feel-earnings-results{grid-template-columns:1fr}}
 </style>
 
+
+<style>
+/* FEELCOIN V4 MOBILE MENU */
+.fc-mobile-menu{display:none}
+
+@media(max-width:950px){
+  .topbar{flex-wrap:wrap}
+
+  .topbar > nav.nav{
+    display:none!important;
+  }
+
+  .topbar > .fc-mobile-menu{
+    display:block!important;
+    width:100%;
+    order:3;
+  }
+
+  .fc-mobile-menu summary{
+    display:block;
+    cursor:pointer;
+    list-style:none;
+    padding:13px 18px;
+    border-radius:12px;
+    background:#141f32;
+    border:1px solid rgba(218,174,82,.35);
+    color:#e9bf65;
+    font-weight:700;
+    text-align:center;
+  }
+
+  .fc-mobile-menu summary::-webkit-details-marker{
+    display:none;
+  }
+
+  .fc-mobile-links{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:8px;
+    margin-top:10px;
+  }
+
+  .fc-mobile-links a{
+    display:block;
+    padding:12px;
+    background:#111a2b;
+    border:1px solid rgba(255,255,255,.09);
+    border-radius:10px;
+    text-align:center;
+    white-space:normal;
+  }
+}
+
+@media(max-width:420px){
+  .fc-mobile-links{
+    grid-template-columns:1fr;
+  }
+}
+</style>
+
 </head>
 
 
@@ -1780,6 +1840,41 @@ rel="noopener noreferrer">
 GitHub
 </a>
 </nav>
+<details class="fc-mobile-menu"><summary aria-label="Toggle navigation">&#9776; Menu</summary><div class="fc-mobile-links"><a href="#dashboard">Dashboard</a>
+<a href="#mining">Start Mining</a>
+<a href="#miner">Miner</a>
+<a href="#poolinfo">Pool Info</a>
+<a href="#faq">FAQ</a>
+<a href="https://explorer.feelcoin.org"
+target="_blank"
+rel="noopener noreferrer">
+Explorer
+</a>
+<a href="https://wallet.feelcoin.org"
+target="_blank"
+rel="noopener noreferrer">
+Web Wallet
+</a>
+<a href="https://paper.feelcoin.org"
+target="_blank"
+rel="noopener noreferrer">
+Paper Wallet
+</a>
+<a href="https://feelcoin.org"
+target="_blank"
+rel="noopener noreferrer">
+Website
+</a>
+<a href="https://github.com/feelcoin-org/feelcoin-miner/releases/latest"
+target="_blank"
+rel="noopener noreferrer">
+Download Miner
+</a>
+<a href="https://github.com/feelcoin-org/feelcoin"
+target="_blank"
+rel="noopener noreferrer">
+GitHub
+</a></div></details>
 
 
 <div class="status">
