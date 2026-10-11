@@ -1796,6 +1796,78 @@ code {
     grid-template-columns:1fr;
   }
 }
+/* FEELCOIN_POOL_NAV_FOOTER_V1_START */
+@media(min-width:1281px) {
+  .topbar { gap:10px; }
+  .topbar > nav.nav { gap:2px; flex-wrap:nowrap; }
+  .topbar > nav.nav > a { font-size:12px; padding:9px 7px; white-space:nowrap; }
+}
+.topbar .fc-pool-downloads { position:relative; }
+.topbar > nav.nav .fc-pool-downloads > summary {
+  list-style:none; display:inline-flex; align-items:center; gap:6px;
+  padding:9px 8px; border-radius:10px; color:#98a8bf;
+  font-size:12px; white-space:nowrap; cursor:pointer;
+}
+.fc-pool-downloads > summary::-webkit-details-marker { display:none; }
+.fc-pool-chevron { color:#e9bf65; display:inline-flex; align-items:center; line-height:1; font-size:15px; transform:translateY(-1px); }
+.topbar > nav.nav .fc-pool-downloads > summary:hover,
+.topbar > nav.nav .fc-pool-downloads[open] > summary {
+  background:#141f32; color:#fff;
+}
+.topbar > nav.nav .fc-pool-download-options {
+  position:absolute; z-index:150; top:calc(100% + 8px); right:0;
+  min-width:250px; padding:7px; background:#101a2a;
+  border:1px solid rgba(218,174,82,.35); border-radius:12px;
+  box-shadow:0 16px 45px rgba(0,0,0,.45);
+}
+.topbar > nav.nav .fc-pool-download-options a {
+  display:block; padding:11px 12px; color:#eef4ff;
+  border-radius:8px; white-space:nowrap; font-size:13px;
+}
+.topbar > nav.nav .fc-pool-download-options a:hover { background:rgba(255,255,255,.07); }
+.topbar .fc-pool-social-right {
+  display:flex; flex:0 0 auto; gap:6px; align-items:center; margin-left:auto;
+}
+.topbar .fc-pool-social-right a {
+  display:inline-flex; align-items:center; justify-content:center;
+  min-width:34px; height:34px; padding:0 8px;
+  border:1px solid rgba(218,174,82,.35); border-radius:10px;
+  color:#e9bf65; text-decoration:none; font-size:13px;
+}
+.topbar .fc-pool-social-right a:hover { background:rgba(255,255,255,.09); }
+.topbar .fc-pool-social-right svg { width:17px; height:17px; }
+.topbar .fc-pool-social-right a:focus-visible,
+.topbar .fc-pool-downloads > summary:focus-visible {
+  outline:2px solid #e9bf65; outline-offset:3px;
+}
+footer { display:flex; justify-content:space-between; gap:15px; padding:18px 20px; color:#aebad0; font-size:12px; }
+footer #updated { display:none !important; }
+@media(max-width:1280px) {
+  .topbar { flex-wrap:wrap; }
+  .topbar > nav.nav { display:none !important; }
+  .topbar .fc-pool-social-right { display:none !important; }
+  .topbar > .fc-mobile-menu,
+  .topbar > .feel-mobile-menu { display:block !important; width:100%; order:3; }
+  .topbar .fc-mobile-links,
+  .topbar .feel-mobile-links { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
+  .topbar .fc-mobile-links .fc-pool-downloads,
+  .topbar .feel-mobile-links .fc-pool-downloads { grid-column:1 / -1; }
+  .topbar .fc-pool-downloads > summary {
+    list-style:none; display:block; padding:12px;
+    border:1px solid rgba(255,255,255,.09);
+    border-radius:10px; background:#111a2b; color:#eef4ff;
+    text-align:center; cursor:pointer;
+  }
+  .topbar .fc-pool-download-options {
+    display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; margin-top:8px;
+  }
+  .topbar .fc-pool-download-options a { display:block; padding:11px 8px;
+    text-align:center; border-radius:10px; background:#111a2b; border:1px solid rgba(255,255,255,.09); }
+}
+@media(max-width:520px) {
+  .topbar .fc-pool-download-options { grid-template-columns:1fr; }
+}
+/* FEELCOIN_POOL_NAV_FOOTER_V1_END */
 </style>
 
 </head>
@@ -1831,17 +1903,9 @@ alt="Feelcoin Logo">
 
 <a href="#mining">Start Mining</a>
 
-<a href="#miner">Miner</a>
+<a href="#miner">Miner Stats</a>
 
 <a href="#poolinfo">Pool Info</a>
-
-<a href="#faq">FAQ</a>
-
-<a href="https://explorer.feelcoin.org"
-target="_blank"
-rel="noopener noreferrer">
-Explorer
-</a>
 
 <a href="https://api.feelcoin.org/docs"
 target="_blank"
@@ -1855,24 +1919,23 @@ rel="noopener noreferrer">
 Web Wallet
 </a>
 
-<a href="https://paper.feelcoin.org"
-target="_blank"
-rel="noopener noreferrer">
-Paper Wallet
-</a>
-
-
 <a href="https://feelcoin.org"
 target="_blank"
 rel="noopener noreferrer">
 Website
 </a>
 
-<a href="https://github.com/feelcoin-org/feelcoin-miner/releases/latest"
-target="_blank"
-rel="noopener noreferrer">
-Download Miner
-</a>
+<a href="https://explorer.feelcoin.org" target="_blank" rel="noopener noreferrer">Explorer</a>
+
+<details class="fc-pool-downloads">
+<summary>Downloads <span aria-hidden="true" class="fc-pool-chevron">⌄</span></summary>
+<div class="fc-pool-download-options">
+<a href="https://github.com/feelcoin-org/feelcoin-miner/releases/latest" target="_blank" rel="noopener noreferrer">Official Miner</a>
+<a href="https://feelcoin.org/#desktop-wallet" target="_blank" rel="noopener noreferrer">Desktop Wallet · Windows / Linux</a>
+<a href="https://feelcoin.org/#android-wallet" target="_blank" rel="noopener noreferrer">Android Wallet · APK</a>
+<a href="https://paper.feelcoin.org" target="_blank" rel="noopener noreferrer">Paper Wallet</a>
+</div>
+</details>
 
 <a href="https://github.com/feelcoin-org/feelcoin"
 target="_blank"
@@ -1885,17 +1948,10 @@ GitHub
   <summary aria-label="Toggle navigation">
     &#9776; <span>Menu</span>
   </summary>
-  <div class="feel-mobile-links">
-    <a href="#dashboard">Dashboard</a>
+  <div class="feel-mobile-links"><a href="#dashboard">Dashboard</a>
 <a href="#mining">Start Mining</a>
-<a href="#miner">Miner</a>
+<a href="#miner">Miner Stats</a>
 <a href="#poolinfo">Pool Info</a>
-<a href="#faq">FAQ</a>
-<a href="https://explorer.feelcoin.org"
-target="_blank"
-rel="noopener noreferrer">
-Explorer
-</a>
 
 <a href="https://api.feelcoin.org/docs"
 target="_blank"
@@ -1907,27 +1963,29 @@ target="_blank"
 rel="noopener noreferrer">
 Web Wallet
 </a>
-<a href="https://paper.feelcoin.org"
-target="_blank"
-rel="noopener noreferrer">
-Paper Wallet
-</a>
 <a href="https://feelcoin.org"
 target="_blank"
 rel="noopener noreferrer">
 Website
 </a>
-<a href="https://github.com/feelcoin-org/feelcoin-miner/releases/latest"
-target="_blank"
-rel="noopener noreferrer">
-Download Miner
-</a>
+<a href="https://explorer.feelcoin.org" target="_blank" rel="noopener noreferrer">Explorer</a>
+<details class="fc-pool-downloads">
+<summary>Downloads <span aria-hidden="true" class="fc-pool-chevron">⌄</span></summary>
+<div class="fc-pool-download-options">
+<a href="https://github.com/feelcoin-org/feelcoin-miner/releases/latest" target="_blank" rel="noopener noreferrer">Official Miner</a>
+<a href="https://feelcoin.org/#desktop-wallet" target="_blank" rel="noopener noreferrer">Desktop Wallet · Windows / Linux</a>
+<a href="https://feelcoin.org/#android-wallet" target="_blank" rel="noopener noreferrer">Android Wallet · APK</a>
+<a href="https://paper.feelcoin.org" target="_blank" rel="noopener noreferrer">Paper Wallet</a>
+</div>
+</details>
 <a href="https://github.com/feelcoin-org/feelcoin"
 target="_blank"
 rel="noopener noreferrer">
 GitHub
-</a>
-  </div>
+</a><a href="https://discord.com/invite/2sx7Q8yAR" target="_blank" rel="noopener noreferrer">Discord</a>
+<a href="https://x.com/feelcoin_org" target="_blank" rel="noopener noreferrer">X</a>
+<a href="https://t.me/feelcoin_community" target="_blank" rel="noopener noreferrer">Telegram</a>
+</div>
 </details>
 
 
@@ -1942,6 +2000,7 @@ Pool Online
 
 </div>
 
+<div class="fc-pool-social-right"><a href="https://discord.com/invite/2sx7Q8yAR" target="_blank" rel="noopener noreferrer" aria-label="Discord">Discord</a><a href="https://x.com/feelcoin_org" target="_blank" rel="noopener noreferrer">X</a><a href="https://t.me/feelcoin_community" target="_blank" rel="noopener noreferrer" aria-label="Telegram"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M21.4 4.6 18.2 19.7l-6.7-4.7-2.4 2.3.4-5.1 9.4-8.5c.4-.4-.1-.6-.6-.3L5.6 13.2.7 11.7c-1.1-.4-1.1-1.1.2-1.6L20 2.7c.9-.3 1.7.2 1.4 1.9z"/></svg></a></div>
 </header>
 
 
@@ -3521,67 +3580,15 @@ contribution to pool rewards.
 <footer>
 
 <span>
-
-© <span id="year"></span>
-Feelcoin Network
-
-• In Feels We Trust
-
+© <span id="year"></span> Feelcoin Network • In Feels We Trust
 </span>
 
-
 <span id="updated">
-
-Waiting for pool data...
-
+Loading...
 </span>
 
 </footer>
 
-
-<div class="feel-social-strip">
-
-  <div class="feel-social-copy">
-    <strong>Follow Feelcoin</strong>
-    <span>News, development updates and community discussion.</span>
-  </div>
-
-  <div class="feel-social-actions">
-
-    <a
-      class="feel-social-btn"
-      href="https://x.com/feelcoin_org"
-      target="_blank"
-      rel="noopener noreferrer">
-
-      <span class="social-logo social-x">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M18.9 2H22l-6.8 7.8L23.2 22h-6.3l-4.9-6.4L6.4 22H3.3l7.2-8.3L.8 2h6.5l4.4 5.8L18.9 2zm-1.1 17.9h1.7L6.4 4H4.6l13.2 15.9z"/>
-        </svg>
-      </span>
-
-      <span>Follow on X</span>
-    </a>
-
-
-    <a
-      class="feel-social-btn"
-      href="https://discord.gg/2sx7Q8yAR"
-      target="_blank"
-      rel="noopener noreferrer">
-
-      <span class="social-logo social-discord">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M19.5 5.3A16 16 0 0 0 15.4 4l-.5 1a14 14 0 0 0-5.8 0l-.5-1a16 16 0 0 0-4.1 1.3C1.9 9.2 1.2 13 1.5 16.8a16.7 16.7 0 0 0 5 2.5l1.2-1.7c-.7-.3-1.3-.6-1.9-1 .2-.1.3-.3.5-.4 3.7 1.7 7.7 1.7 11.4 0l.5.4c-.6.4-1.2.7-1.9 1l1.2 1.7a16.7 16.7 0 0 0 5-2.5c.4-4.4-.8-8.1-3-11.5zM8.4 14.5c-1 0-1.9-1-1.9-2.2s.8-2.2 1.9-2.2 1.9 1 1.9 2.2-.8 2.2-1.9 2.2zm7.2 0c-1 0-1.9-1-1.9-2.2s.8-2.2 1.9-2.2 1.9 1 1.9 2.2-.8 2.2-1.9 2.2z"/>
-        </svg>
-      </span>
-
-      <span>Join Discord</span>
-    </a>
-
-  </div>
-
-</div>
 
 </main>
 
