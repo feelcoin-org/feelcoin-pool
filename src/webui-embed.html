@@ -1898,6 +1898,70 @@ footer #updated { display:none !important; }
   }
 }
 /* FEELCOIN_POOL_DROPDOWN_LAYER_TYPE_V1_END */
+/* FEELCOIN_POOL_HEADER_POLISH_V2_START */
+/* Keep the open Downloads popup above the next dashboard card. */
+@media(min-width:1501px){
+  .topbar {
+    position:relative !important;
+    z-index:700 !important;
+    overflow:visible !important;
+    gap:8px;
+  }
+  .topbar > nav.nav {
+    display:flex;
+    align-items:center;
+    justify-content:flex-end;
+    flex:1 1 auto;
+    min-width:0;
+    gap:2px;
+    flex-wrap:nowrap;
+  }
+  .topbar > nav.nav > a {
+    font-size:14px;
+    padding:9px 6px;
+    white-space:nowrap;
+    flex-shrink:0;
+  }
+  .topbar > nav.nav .fc-pool-downloads > summary {
+    font-size:14px; padding:9px 6px; white-space:nowrap;
+  }
+  .topbar > nav.nav .fc-pool-downloads {
+    position:relative; z-index:701;
+    flex:0 0 auto;
+  }
+  .topbar > nav.nav .fc-pool-download-options {
+    position:absolute; top:calc(100% + 8px); right:0;
+    z-index:900; overflow:visible;
+  }
+  .topbar > nav.nav .fc-pool-social-right {
+    display:inline-flex; align-items:center; gap:5px;
+    margin-left:4px; flex:0 0 auto;
+  }
+  .topbar > nav.nav .fc-pool-social-right a {
+    font-size:13px; flex-shrink:0;
+  }
+  .topbar > .status {
+    margin-left:auto;
+    order:3;
+    flex:0 0 auto;
+    white-space:nowrap;
+  }
+  .topbar > .brand { flex:0 0 auto; }
+}
+@media(max-width:1500px){
+  .topbar { position:relative !important; z-index:700 !important; overflow:visible !important; flex-wrap:wrap; }
+  .topbar > nav.nav { display:none !important; }
+  .topbar > .fc-mobile-menu, .topbar > .feel-mobile-menu {
+    display:block !important; width:100%; order:3;
+  }
+  .topbar .fc-mobile-links,
+  .topbar .feel-mobile-links { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
+  .topbar > .status { margin-left:auto; flex:0 0 auto; order:2; white-space:nowrap; }
+}
+@media(max-width:520px){
+  .topbar .fc-mobile-links, .topbar .feel-mobile-links { grid-template-columns:1fr; }
+}
+/* FEELCOIN_POOL_HEADER_POLISH_V2_END */
 </style>
 
 </head>
@@ -1972,6 +2036,8 @@ target="_blank"
 rel="noopener noreferrer">
 GitHub
 </a>
+
+<div class="fc-pool-social-right"><a href="https://discord.com/invite/2sx7Q8yAR" target="_blank" rel="noopener noreferrer" aria-label="Discord">Discord</a><a href="https://x.com/feelcoin_org" target="_blank" rel="noopener noreferrer">X</a><a href="https://t.me/feelcoin_community" target="_blank" rel="noopener noreferrer" aria-label="Telegram"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M21.4 4.6 18.2 19.7l-6.7-4.7-2.4 2.3.4-5.1 9.4-8.5c.4-.4-.1-.6-.6-.3L5.6 13.2.7 11.7c-1.1-.4-1.1-1.1.2-1.6L20 2.7c.9-.3 1.7.2 1.4 1.9z"/></svg></a></div>
 </nav>
 
 <details class="feel-mobile-menu">
@@ -2030,7 +2096,7 @@ Pool Online
 
 </div>
 
-<div class="fc-pool-social-right"><a href="https://discord.com/invite/2sx7Q8yAR" target="_blank" rel="noopener noreferrer" aria-label="Discord">Discord</a><a href="https://x.com/feelcoin_org" target="_blank" rel="noopener noreferrer">X</a><a href="https://t.me/feelcoin_community" target="_blank" rel="noopener noreferrer" aria-label="Telegram"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M21.4 4.6 18.2 19.7l-6.7-4.7-2.4 2.3.4-5.1 9.4-8.5c.4-.4-.1-.6-.6-.3L5.6 13.2.7 11.7c-1.1-.4-1.1-1.1.2-1.6L20 2.7c.9-.3 1.7.2 1.4 1.9z"/></svg></a></div>
+
 </header>
 
 
