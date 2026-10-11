@@ -69,8 +69,8 @@ def inspect_new_nav(nav, mobile=False):
     for item in (
         'href="#dashboard"', 'href="#mining"',
         '<a href="#miner">Miner Stats</a>',
-        'https://feelcoin.org', 'https://explorer.feelcoin.org',
-        'https://wallet.feelcoin.org',
+        'href="https://feelcoin.org"', 'href="https://explorer.feelcoin.org"',
+        'href="https://wallet.feelcoin.org"',
         '<summary>Downloads ', 'https://api.feelcoin.org/docs',
         'https://github.com/feelcoin-org/feelcoin-miner/releases/latest',
         'https://feelcoin.org/#desktop-wallet',
