@@ -1962,6 +1962,81 @@ footer #updated { display:none !important; }
   .topbar .fc-mobile-links, .topbar .feel-mobile-links { grid-template-columns:1fr; }
 }
 /* FEELCOIN_POOL_HEADER_POLISH_V2_END */
+/* FEELCOIN_POOL_NAV_REFINEMENT_V3_START */
+/* UI-only: keep Downloads above hero; larger, bold header controls. */
+.shell > .topbar {
+  position:relative !important;
+  z-index:5000 !important;
+  overflow:visible !important;
+}
+.topbar > nav.nav {
+  position:relative;
+  z-index:5001;
+  overflow:visible !important;
+}
+.topbar > nav.nav .fc-pool-downloads {
+  position:relative;
+  z-index:5002;
+}
+.topbar > nav.nav .fc-pool-download-options {
+  position:absolute;
+  z-index:5003 !important;
+  overflow:visible;
+}
+@media(min-width:1501px) {
+  .topbar { gap:8px !important; }
+  .topbar > nav.nav {
+    display:flex; flex:1 1 auto; min-width:0;
+    align-items:center; justify-content:flex-end;
+    flex-wrap:nowrap; gap:2px;
+  }
+  .topbar > nav.nav > a,
+  .topbar > nav.nav .fc-pool-downloads > summary {
+    font-size:15px !important;
+    font-weight:700 !important;
+    line-height:1.25;
+    padding:9px 5px !important;
+    white-space:nowrap;
+  }
+  .topbar > nav.nav .fc-pool-download-options a {
+    font-size:15px !important;
+    font-weight:700 !important;
+  }
+  .topbar .fc-pool-social-right {
+    margin-left:4px !important;
+    gap:5px;
+  }
+  .topbar .fc-pool-social-right a {
+    font-size:15px !important;
+    font-weight:700 !important;
+  }
+  /* Remove the auto margin that separated Pool Online from social links. */
+  .topbar > .status {
+    margin-left:0 !important;
+    margin-right:0;
+    order:3;
+    flex:0 0 auto;
+    font-size:14px;
+    font-weight:700;
+    white-space:nowrap;
+  }
+}
+@media(max-width:1500px) {
+  .topbar > .status {
+    font-size:14px;
+    font-weight:700;
+  }
+  .topbar .fc-mobile-links > a,
+  .topbar .feel-mobile-links > a,
+  .topbar .fc-mobile-links .fc-pool-downloads > summary,
+  .topbar .feel-mobile-links .fc-pool-downloads > summary,
+  .topbar .fc-mobile-links .fc-pool-download-options a,
+  .topbar .feel-mobile-links .fc-pool-download-options a {
+    font-size:15px !important;
+    font-weight:700 !important;
+  }
+}
+/* FEELCOIN_POOL_NAV_REFINEMENT_V3_END */
 </style>
 
 </head>
