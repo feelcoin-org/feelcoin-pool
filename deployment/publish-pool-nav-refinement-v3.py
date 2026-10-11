@@ -44,12 +44,14 @@ def patch(live, approved):
             raise RuntimeError(f"{name}: expected one header social group")
     for required in (
         'font-size:15px !important;',
-        'font-weight:700 !important;',
         'margin-left:0 !important;',
         'z-index:5000 !important;',
     ):
         if required not in css:
             raise RuntimeError(f"Approved CSS is missing {required}")
+
+    if 'font-weight:700 !important;' in css or 'font-weight:700;' in css:
+        raise RuntimeError("Refinement should not force bold font weight")
 
     if START in live or END in live:
         if live.count(START) != 1 or live.count(END) != 1:
@@ -84,10 +86,10 @@ def main():
     source = args.source.read_text(encoding="utf-8")
     result, changed = patch(before, source)
     if not changed:
-        print("Already installed: bold 15px buttons, grouped status, fixed popup")
+        print("Already installed: larger 15px buttons, grouped status, fixed popup")
         return
     if not args.apply:
-        print("Dry run OK: bold 15px navigation, Pool Online beside social buttons")
+        print("Dry run OK: larger 15px navigation, Pool Online beside social buttons")
         print("Downloads dropdown raised above hero; all other content untouched")
         return
 
