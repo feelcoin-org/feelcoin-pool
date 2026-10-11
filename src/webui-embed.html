@@ -1868,6 +1868,36 @@ footer #updated { display:none !important; }
   .topbar .fc-pool-download-options { grid-template-columns:1fr; }
 }
 /* FEELCOIN_POOL_NAV_FOOTER_V1_END */
+/* FEELCOIN_POOL_DROPDOWN_LAYER_TYPE_V1_START */
+/* The header must establish a higher stacking level than the hero cards. */
+.shell > .topbar {
+  position:relative !important;
+  z-index:1000 !important;
+  overflow:visible !important;
+}
+.topbar > nav.nav {
+  overflow:visible;
+}
+.topbar > nav.nav .fc-pool-downloads[open] {
+  z-index:1100;
+}
+.topbar > nav.nav .fc-pool-download-options {
+  z-index:1200;
+}
+@media(min-width:1281px) {
+  .topbar > nav.nav > a {
+    font-size:14px;
+    padding:9px 6px;
+  }
+  .topbar > nav.nav .fc-pool-downloads > summary {
+    font-size:14px;
+    padding:9px 6px;
+  }
+  .topbar .fc-pool-social-right a {
+    font-size:14px;
+  }
+}
+/* FEELCOIN_POOL_DROPDOWN_LAYER_TYPE_V1_END */
 </style>
 
 </head>
