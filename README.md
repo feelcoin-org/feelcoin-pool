@@ -1,5 +1,9 @@
 # ⛏️ Feelcoin Mining Pool
 
+<p align="center">
+  <a href="https://feelcoin.org"><img src="https://feelcoin.org/assets/feelcoin-logo-v2.png" alt="Official Feelcoin logo" width="144"></a>
+</p>
+
 **Official open-source RandomX mining pool for the Feelcoin (FEEL) network**
 
 **Mining pool:** https://pool.feelcoin.org  
