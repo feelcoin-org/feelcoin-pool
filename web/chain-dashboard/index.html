@@ -2397,15 +2397,6 @@ Active miners
 </section>
 
 
-<section class="card section" id="feel-earnings-calculator" aria-labelledby="feelEarningsHeading">
-  <div class="section-title"><div><h2 id="feelEarningsHeading">FEEL Mining Earnings Calculator</h2><p>Estimate your mining rewards using verified live network and Pool data.</p></div></div>
-  <div class="feel-earnings-input"><label for="feelEarningsHashrate">Your hashrate</label><div class="feel-earnings-controls"><input id="feelEarningsHashrate" type="number" min="0" step="any" value="1000" inputmode="decimal" aria-label="Your mining hashrate"><select id="feelEarningsUnit" aria-label="Hashrate unit"><option value="1">H/s</option><option value="1000">kH/s</option><option value="1000000">MH/s</option></select></div></div>
-  <div class="feel-earnings-results" aria-live="polite"><div><span>Per day</span><strong id="feelEarningsDay">—</strong></div><div><span>Per week</span><strong id="feelEarningsWeek">—</strong></div><div><span>Per month (30d)</span><strong id="feelEarningsMonth">—</strong></div></div>
-  <p class="feel-earnings-status" id="feelEarningsStatus">Loading verified network data…</p>
-  <details class="feel-earnings-assumptions"><summary>Live assumptions</summary><div id="feelEarningsAssumptions">Waiting for verified data.</div></details>
-  <p class="feel-earnings-disclaimer">Estimates, not guaranteed payments. Uses a recent verified main-chain Pool miner-output reward (the protocol's 2% treasury allocation is already excluded), minus the Pool fee. Pool luck, PPLNS, changing difficulty and rewards, uptime, fees and payout thresholds affect actual earnings. Transaction fees in the sampled block may vary.</p>
-</section>
-
 <section class="feel-network-status" id="feelNetworkStatus">
 
 <div class="feel-network-status-card">
@@ -2469,6 +2460,15 @@ Waiting for network data...
 
 </div>
 </div>
+</section>
+
+<section class="card section" id="feel-earnings-calculator" aria-labelledby="feelEarningsHeading">
+  <div class="section-title"><div><h2 id="feelEarningsHeading">FEEL Mining Earnings Calculator</h2><p>Estimate your mining rewards using verified live network and Pool data.</p></div></div>
+  <div class="feel-earnings-input"><label for="feelEarningsHashrate">Your hashrate</label><div class="feel-earnings-controls"><input id="feelEarningsHashrate" type="number" min="0" step="any" value="1000" inputmode="decimal" aria-label="Your mining hashrate"><select id="feelEarningsUnit" aria-label="Hashrate unit"><option value="1">H/s</option><option value="1000">kH/s</option><option value="1000000">MH/s</option></select></div></div>
+  <div class="feel-earnings-results" aria-live="polite"><div><span>Per day</span><strong id="feelEarningsDay">—</strong></div><div><span>Per week</span><strong id="feelEarningsWeek">—</strong></div><div><span>Per month (30d)</span><strong id="feelEarningsMonth">—</strong></div></div>
+  <p class="feel-earnings-status" id="feelEarningsStatus">Loading verified network data…</p>
+  <details class="feel-earnings-assumptions"><summary>Live assumptions</summary><div id="feelEarningsAssumptions">Waiting for verified data.</div></details>
+  <p class="feel-earnings-disclaimer">Estimates, not guaranteed payments. Uses a recent verified main-chain Pool miner-output reward (the protocol's 2% treasury allocation is already excluded), minus the Pool fee. Pool luck, PPLNS, changing difficulty and rewards, uptime, fees and payout thresholds affect actual earnings. Transaction fees in the sampled block may vary.</p>
 </section>
 
 
