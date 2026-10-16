@@ -284,6 +284,18 @@ typedef struct payment_t
     char address[ADDRESS_MAX];
 } payment_t;
 
+/* A payout intent is committed to LMDB before the wallet RPC is sent.
+ * Its exact JSON request survives process crashes and ambiguous RPC failures.
+ * An unresolved intent intentionally blocks automatic payouts until reconciled.
+ */
+#define PAYOUT_INTENT_KEY "payout_intent_v1"
+
+typedef struct payout_batch_t
+{
+    gbag_t *payments;
+    char *request;
+} payout_batch_t;
+
 typedef struct rpc_callback_t rpc_callback_t;
 typedef void (*rpc_callback_fun)(const char*, rpc_callback_t*);
 typedef void (*rpc_datafree_fun)(void*);
@@ -306,6 +318,8 @@ static struct event *signal_usr1;
 static time_t template_triggered;
 static uint32_t extra_nonce;
 static uint32_t instance_id;
+static uint64_t template_request_seq = 0;
+static uint64_t template_accepted_seq = 0;
 static block_t block_headers_range[BLOCK_HEADERS_RANGE];
 static MDB_env *env;
 static MDB_dbi db_shares;
@@ -448,6 +462,46 @@ static inline void
 rpc_bag_free(void* data)
 {
     gbag_free((gbag_t*)data);
+}
+
+static void
+payout_batch_free(void *data)
+{
+    payout_batch_t *batch = (payout_batch_t*)data;
+    if (!batch)
+        return;
+    if (batch->payments)
+        gbag_free(batch->payments);
+    free(batch->request);
+    free(batch);
+}
+
+/* A single durable intent is the cross-restart payout lock.  On an uncertain
+ * outcome, leave it untouched: never replay wallet transfers automatically.
+ */
+static int
+payout_intent_create(const char *request)
+{
+    MDB_txn *txn = NULL;
+    int rc = pdb_txn_begin(env, NULL, 0, &txn);
+    if (rc)
+        goto fail;
+    MDB_val key = {sizeof(PAYOUT_INTENT_KEY)-1, (void*)PAYOUT_INTENT_KEY};
+    MDB_val val = {strlen(request), (void*)request};
+    rc = mdb_put(txn, db_properties, &key, &val, MDB_NOOVERWRITE);
+    if (rc)
+    {
+        mdb_txn_abort(txn);
+        if (rc == MDB_KEYEXIST)
+            log_error("PAYOUTS LOCKED: unresolved durable payout intent; reconcile wallet and ledger before clearing it");
+        goto fail;
+    }
+    rc = mdb_txn_commit(txn);
+    if (!rc)
+        return 0;
+fail:
+    log_error("Payout intent not committed; transfer NOT sent: %s", mdb_strerror(rc));
+    return rc;
 }
 
 static int
@@ -1705,6 +1759,13 @@ job_recycle(void *item)
         free(job->submissions);
         job->submissions = NULL;
     }
+    if (job->block_template)
+    {
+        free(job->block_template->hashing_blob);
+        free(job->block_template->block_blob);
+        free(job->block_template);
+        job->block_template = NULL;
+    }
     if (job->miner_template)
     {
         block_template_t *bt = job->miner_template;
@@ -2006,92 +2067,135 @@ client_find_job(client_t *client, const char *job_id)
 static void
 miner_send_job(client_t *client, bool response)
 {
-    job_t *job = bstack_push(client->active_jobs, NULL);
     block_template_t *bt = bstack_top(bst);
-    job->block_template = bt;
+    job_t prepared = {0};
+    unsigned char *block = NULL;
+    unsigned char *hashing_blob = NULL;
+    char *block_hex = NULL;
+    size_t hashing_blob_size = 0;
+    uint32_t new_nonce = extra_nonce + 1;
 
-    if (client->mode == MODE_SELF_SELECT)
-    {
-        uuid_generate(job->id);
-        retarget(client, job);
-        ++extra_nonce;
-        job->extra_nonce = extra_nonce;
-        char body[JOB_BODY_MAX] = {0};
-        stratum_get_job_body_ss(body, client, response);
-        log_trace("Miner job: %s", body);
-        struct evbuffer *output = bufferevent_get_output(client->bev);
-        evbuffer_add(output, body, strlen(body));
-        return;
-    }
-
-    /* Quick check we actually have a block template */
-    if (!bt)
+    if (!bt && client->mode != MODE_SELF_SELECT)
     {
         log_warn("Cannot send client a job: No block template");
         return;
     }
 
-    /*
-      1. Copy block_template->block_blob
-      2. Update bytes in reserved space at reserved_offset
-      3. Get block hashing blob for job
-      4. Send
-    */
+    if (bt)
+    {
+        if (!bt->block_blob || !bt->block_blob_size)
+        {
+            log_error("Invalid block template");
+            return;
+        }
 
-    /* Copy */
-    unsigned char *block = calloc(bt->block_blob_size, sizeof(char));
-    memcpy(block, bt->block_blob, bt->block_blob_size);
+        block_template_t *copy = calloc(1, sizeof(*copy));
+        if (!copy)
+            goto allocation_failed;
 
-    /* Set the extra nonce in our reserved space */
-    unsigned char *p = block;
-    p += bt->reserved_offset;
-    ++extra_nonce;
-    memcpy(p, &extra_nonce, sizeof(extra_nonce));
-    job->extra_nonce = extra_nonce;
+        *copy = *bt;
+        copy->hashing_blob = NULL;
+        copy->hashing_blob_size = 0;
+        copy->block_blob = NULL;
 
-    /* Add our instance ID */
-    p += 4;
-    memcpy(p, &instance_id, sizeof(instance_id));
+        prepared.block_template = copy;
 
-    /* Get hashing blob */
-    size_t hashing_blob_size = 0;
-    unsigned char *hashing_blob = NULL;
-    get_hashing_blob(block, bt->block_blob_size, &hashing_blob,
-            &hashing_blob_size);
+        copy->block_blob = malloc(bt->block_blob_size);
+        if (!copy->block_blob)
+            goto allocation_failed;
 
-    /* Make hex */
-    job->blob = calloc((hashing_blob_size << 1) +1, sizeof(char));
-    bin_to_hex(hashing_blob, hashing_blob_size, job->blob);
-    log_trace("Miner hashing blob: %s", job->blob);
+        memcpy(copy->block_blob, bt->block_blob,
+               bt->block_blob_size);
+    }
 
-    /* Save a job id */
-    uuid_generate(job->id);
+    prepared.extra_nonce = new_nonce;
+    uuid_generate(prepared.id);
 
-    /* Send */
-    char job_id[33] = {0};
-    bin_to_hex((const unsigned char*)job->id, sizeof(uuid_t), &job_id[0]);
+    if (client->mode != MODE_SELF_SELECT)
+    {
+        bt = prepared.block_template;
 
-    /* Retarget */
+        if (bt->reserved_offset > bt->block_blob_size ||
+            bt->block_blob_size - bt->reserved_offset < 8)
+        {
+            log_error("Invalid reserved offset in block template");
+            goto preparation_failed;
+        }
+
+        if (bt->block_blob_size > (SIZE_MAX - 1) / 2)
+            goto preparation_failed;
+
+        block = malloc(bt->block_blob_size);
+        if (!block)
+            goto allocation_failed;
+
+        memcpy(block, bt->block_blob, bt->block_blob_size);
+
+        unsigned char *p = block + bt->reserved_offset;
+        memcpy(p, &new_nonce, sizeof(new_nonce));
+        memcpy(p + 4, &instance_id, sizeof(instance_id));
+
+        if (get_hashing_blob(block, bt->block_blob_size,
+                &hashing_blob, &hashing_blob_size) != 0 ||
+            !hashing_blob || !hashing_blob_size)
+        {
+            log_error("Unable to construct hashing blob");
+            goto preparation_failed;
+        }
+
+        if (hashing_blob_size > (SIZE_MAX - 1) / 2)
+            goto preparation_failed;
+
+        prepared.blob = calloc(hashing_blob_size * 2 + 1, 1);
+        if (!prepared.blob)
+            goto allocation_failed;
+
+        bin_to_hex(hashing_blob, hashing_blob_size, prepared.blob);
+
+        if (client->is_xnp)
+        {
+            block_hex = calloc(bt->block_blob_size * 2 + 1, 1);
+            if (!block_hex)
+                goto allocation_failed;
+
+            bin_to_hex(block, bt->block_blob_size, block_hex);
+        }
+    }
+
+    free(block);
+    block = NULL;
+    free(hashing_blob);
+    hashing_blob = NULL;
+
+    job_t *job = bstack_push(client->active_jobs, &prepared);
+    extra_nonce = new_nonce;
     retarget(client, job);
 
     char body[JOB_BODY_MAX] = {0};
-    if (!client->is_xnp)
-    {
-        stratum_get_job_body(body, client, response);
-    }
-    else
-    {
-        size_t hex_size = bt->block_blob_size<<1;
-        char *block_hex = calloc(hex_size+1, sizeof(char));
-        bin_to_hex(block, bt->block_blob_size, block_hex);
+
+    if (client->mode == MODE_SELF_SELECT)
+        stratum_get_job_body_ss(body, client, response);
+    else if (client->is_xnp)
         stratum_get_proxy_job_body(body, client, block_hex, response);
-        free(block_hex);
-    }
-    log_trace("Miner job: %.*s", strlen(body)-1, body);
+    else
+        stratum_get_job_body(body, client, response);
+
+    log_trace("Miner job: %s", body);
+
     struct evbuffer *output = bufferevent_get_output(client->bev);
     evbuffer_add(output, body, strlen(body));
+
+    free(block_hex);
+    return;
+
+allocation_failed:
+    log_error("Unable to allocate mining job data");
+
+preparation_failed:
     free(block);
     free(hashing_blob);
+    free(block_hex);
+    job_recycle(&prepared);
 }
 
 static void
@@ -2243,7 +2347,7 @@ rpc_on_response(struct evhttp_request *req, void *arg)
 
     if (!req)
     {
-        log_error("Request failure. Aborting.");
+        log_error("Request failure. Aborting. Any pending payout intent remains locked.");
         rpc_callback_free(callback);
         return;
     }
@@ -2456,16 +2560,30 @@ rpc_on_block_template(const char* data, rpc_callback_t *callback)
         goto done;
     }
 
+    uint64_t seq = callback->data ?
+        *(const uint64_t*)callback->data : 0;
+
+    if (seq && seq < template_accepted_seq)
+    {
+        log_debug("Ignoring outdated block template response");
+        goto done;
+    }
+
     pool_stats.last_template_fetched = time(NULL);
     response_to_block_template(result, &cand);
 
     if ((top = bstack_top(bst)))
     {
-        if (cand.tx_count > top->tx_count || cand.height > top->height)
+        if (cand.height > top->height ||
+            (cand.height == top->height &&
+             (strcmp(cand.prev_hash, top->prev_hash) != 0 ||
+              cand.tx_count > top->tx_count)))
         {
             log_trace("Using new template, height: %"PRIu64", txs: %"PRIu64,
                     cand.height, cand.tx_count);
             bstack_push(bst, &cand);
+            if (seq)
+                template_accepted_seq = seq;
         }
         else
         {
@@ -2475,7 +2593,11 @@ rpc_on_block_template(const char* data, rpc_callback_t *callback)
         }
     }
     else
+    {
         bstack_push(bst, &cand);
+        if (seq)
+            template_accepted_seq = seq;
+    }
 
     clients_send_job();
 
@@ -2680,7 +2802,15 @@ rpc_on_last_block_header(const char* data, rpc_callback_t *callback)
     uint64_t reserve = 17;
     rpc_get_request_body(body, "get_block_template", "sssd",
             "wallet_address", config.pool_wallet, "reserve_size", reserve);
-    rpc_callback_t *cb1 = rpc_callback_new(rpc_on_block_template, 0, 0);
+    uint64_t *seq = malloc(sizeof(*seq));
+    if (!seq)
+    {
+        log_error("Unable to allocate template request sequence");
+        return;
+    }
+
+    *seq = ++template_request_seq;
+    rpc_callback_t *cb1 = rpc_callback_new(rpc_on_block_template, seq, free);
     rpc_request(pool_base, body, cb1);
 
     if (height_changed && top->height >= BLOCK_HEADERS_RANGE + 60 - 1)
@@ -2697,173 +2827,208 @@ rpc_on_last_block_header(const char* data, rpc_callback_t *callback)
     json_object_put(root);
 }
 
+static void upstream_send_client_block(block_t *block);
+
+/* A submit_block RPC response is authoritative.  Do not report or store
+ * rejected/unverified candidates as accepted blocks.  Previously stored
+ * records are deliberately left unchanged for separate chain reconciliation.
+ */
 static void
 rpc_on_block_submitted(const char* data, rpc_callback_t *callback)
 {
-    int rc = 0;
+    block_t *b = callback ? (block_t*)callback->data : NULL;
     json_object *root = json_tokener_parse(data);
-    JSON_GET_OR_WARN(result, root, json_type_object);
-    JSON_GET_OR_WARN(status, result, json_type_string);
-    const char *ss = json_object_get_string(status);
-    json_object *error = NULL;
-    json_object_object_get_ex(root, "error", &error);
-    /*
-      The RPC reports submission as an error even when it's added as
-      an alternative block. Thus, still store it. This doesn't matter
-      as upon payout, blocks are checked whether they are orphaned or not.
-    */
-    if (error)
+    json_object *result = NULL, *status = NULL, *error = NULL;
+    int rc = 0;
+
+    if (!b)
     {
-        JSON_GET_OR_WARN(code, error, json_type_object);
-        JSON_GET_OR_WARN(message, error, json_type_string);
-        int ec = json_object_get_int(code);
-        const char *em = json_object_get_string(message);
-        log_warn("Error (%d) with block submission: %s", ec, em);
+        log_error("Missing candidate metadata for block submission");
+        goto done;
     }
-    if (!status || strcmp(ss, "OK"))
+    if (!root || !json_object_is_type(root, json_type_object))
     {
-        log_warn("Error submitting block: %s", ss);
+        log_warn("Unverified block candidate at height: %"PRIu64
+                 "; daemon returned invalid JSON", b->height);
+        goto done;
+    }
+    if (json_object_object_get_ex(root, "error", &error) && error &&
+        !json_object_is_type(error, json_type_null))
+    {
+        json_object *code = NULL, *message = NULL;
+        json_object_object_get_ex(error, "code", &code);
+        json_object_object_get_ex(error, "message", &message);
+        log_warn("Block candidate NOT accepted at height %"PRIu64
+                 ": daemon error %d (%s)", b->height,
+                 code ? json_object_get_int(code) : 0,
+                 message && json_object_is_type(message, json_type_string) ?
+                 json_object_get_string(message) : "unspecified");
+        goto done;
+    }
+    if (!json_object_object_get_ex(root, "result", &result) ||
+        !json_object_is_type(result, json_type_object) ||
+        !json_object_object_get_ex(result, "status", &status) ||
+        !json_object_is_type(status, json_type_string) ||
+        strcmp(json_object_get_string(status), "OK"))
+    {
+        log_warn("Block candidate NOT verified by daemon at height %"PRIu64
+                 "; not stored or counted", b->height);
+        goto done;
+    }
+
+    /* Store before updating public counters or notifying trusted upstream. */
+    rc = store_block(b->height, b);
+    if (rc)
+    {
+        log_error("Accepted block at height %"PRIu64
+                  " could not be stored: %s", b->height, mdb_strerror(rc));
+        goto done;
     }
     pool_stats.pool_blocks_found++;
-    block_t *b = (block_t*)callback->data;
     if (!upstream_event)
     {
         pool_stats.last_block_found = b->timestamp;
         pool_stats.round_hashes = 0;
     }
-    log_info("Block submitted at height: %"PRIu64, b->height);
-    if ((rc = store_block(b->height, b)))
-        log_warn("Failed to store block: %s", mdb_strerror(rc));
-    json_object_put(root);
+    else
+        upstream_send_client_block(b);
+    log_info("Daemon accepted block at height: %"PRIu64, b->height);
+
+done:
+    if (root)
+        json_object_put(root);
 }
 
 static void
 rpc_on_wallet_transferred(const char* data, rpc_callback_t *callback)
 {
-    log_trace("Transfer response: \n%s", data);
+    payout_batch_t *batch = (payout_batch_t*)callback->data;
     json_object *root = json_tokener_parse(data);
-    JSON_GET_OR_WARN(result, root, json_type_object);
-    json_object *error = NULL;
-    json_object_object_get_ex(root, "error", &error);
-    if (error)
-    {
-        JSON_GET_OR_WARN(code, error, json_type_object);
-        JSON_GET_OR_WARN(message, error, json_type_string);
-        int ec = json_object_get_int(code);
-        const char *em = json_object_get_string(message);
-        log_error("Error (%d) with wallet transfer: %s", ec, em);
-    }
-    else
-        log_info("Payout transfer successful");
-
-    int rc = 0;
-    char *err = NULL;
+    json_object *result = NULL, *error = NULL, *hashes = NULL;
     MDB_txn *txn = NULL;
-    MDB_cursor *cursor = NULL;
+    int rc = 0;
 
-    /* First, updated balance(s) */
-    if ((rc = pdb_txn_begin(env, NULL, 0, &txn)))
+    if (!root || !json_object_is_type(root, json_type_object) ||
+        !json_object_object_get_ex(root, "result", &result) ||
+        !json_object_is_type(result, json_type_object) ||
+        (json_object_object_get_ex(root, "error", &error) && error &&
+         !json_object_is_type(error, json_type_null)) ||
+        !json_object_object_get_ex(result, "tx_hash_list", &hashes) ||
+        !json_object_is_type(hashes, json_type_array) ||
+        !json_object_array_length(hashes))
     {
-        err = mdb_strerror(rc);
-        log_error("%s", err);
-        goto cleanup;
+        log_error("PAYOUTS LOCKED: wallet transfer failed or response ambiguous; "
+                  "durable intent retained for manual reconciliation");
+        goto done;
     }
-    if ((rc = mdb_cursor_open(txn, db_balance, &cursor)))
+
+    for (size_t i=0; i<json_object_array_length(hashes); ++i)
     {
-        err = mdb_strerror(rc);
-        log_error("%s", err);
+        json_object *hash = json_object_array_get_idx(hashes, i);
+        const char *txid = json_object_is_type(hash, json_type_string) ?
+                           json_object_get_string(hash) : NULL;
+        if (!txid || strlen(txid) != 64 ||
+            strspn(txid, "0123456789abcdefABCDEF") != 64)
+        {
+            log_error("PAYOUTS LOCKED: invalid wallet transaction hash");
+            goto done;
+        }
+    }
+
+    /* Balance updates, ledger entries and the intent deletion must commit
+     * together.  Any failure keeps the intent and prevents duplicate RPCs.
+     */
+    rc = pdb_txn_begin(env, NULL, 0, &txn);
+    if (rc)
+        goto db_error;
+    MDB_val intent_key = {sizeof(PAYOUT_INTENT_KEY)-1,
+                          (void*)PAYOUT_INTENT_KEY};
+    MDB_val intent_value;
+    rc = mdb_get(txn, db_properties, &intent_key, &intent_value);
+    if (rc || intent_value.mv_size != strlen(batch->request) ||
+        memcmp(intent_value.mv_data, batch->request, intent_value.mv_size))
+    {
+        log_error("PAYOUTS LOCKED: payout intent missing/mismatched; no balance changes");
         mdb_txn_abort(txn);
-        goto cleanup;
-    }
-    gbag_t *bag_pay = (gbag_t*) callback->data;
-    payment_t *p = (payment_t*) gbag_first(bag_pay);
-    while ((p = gbag_next(bag_pay, 0)))
-    {
-        MDB_cursor_op op = MDB_SET;
-        MDB_val key = {ADDRESS_MAX, (void*)p->address};
-        MDB_val val;
-        if ((rc = mdb_cursor_get(cursor, &key, &val, op)))
-        {
-            if (rc != MDB_NOTFOUND)
-            {
-                err = mdb_strerror(rc);
-                log_error("%s", err);
-            }
-            else
-                log_error("Payment made to non-existent address");
-            continue;
-        }
-        uint64_t current_amount = *(uint64_t*)val.mv_data;
-
-        if (current_amount >= p->amount)
-        {
-            current_amount -= p->amount;
-        }
-        else
-        {
-            log_error("Payment was more than balance: %"PRIu64" > %"PRIu64,
-                      p->amount, current_amount);
-            current_amount = 0;
-        }
-
-        if (error)
-        {
-            log_warn("Error seen on transfer for %s with amount %"PRIu64,
-                    p->address, p->amount);
-        }
-        MDB_val new_val = {sizeof(current_amount), (void*)&current_amount};
-        if ((rc = mdb_cursor_put(cursor, &key, &new_val, MDB_CURRENT)))
-        {
-            err = mdb_strerror(rc);
-            log_error("%s", err);
-        }
-    }
-    if ((rc = mdb_txn_commit(txn)))
-    {
-        err = mdb_strerror(rc);
-        log_error("Error committing updated balance(s): %s", err);
-        mdb_txn_abort(txn);
-        goto cleanup;
+        txn = NULL;
+        goto done;
     }
 
-    /* Now store payment info */
-    if ((rc = pdb_txn_begin(env, NULL, 0, &txn)))
-    {
-        err = mdb_strerror(rc);
-        log_error("%s", err);
-        goto cleanup;
-    }
-    if ((rc = mdb_cursor_open(txn, db_payments, &cursor)))
-    {
-        err = mdb_strerror(rc);
-        log_error("%s", err);
-        mdb_txn_abort(txn);
-        goto cleanup;
-    }
     time_t now = time(NULL);
-    p = (payment_t*) gbag_first(bag_pay);
-    while ((p = gbag_next(bag_pay, 0)))
+    payment_t *p = (payment_t*)gbag_first(batch->payments);
+    while ((p = gbag_next(batch->payments, 0)))
     {
-        p->timestamp = now;
         MDB_val key = {ADDRESS_MAX, (void*)p->address};
-        MDB_val val = {sizeof(payment_t), p};
-        if ((rc = mdb_cursor_put(cursor, &key, &val, MDB_APPENDDUP)))
+        MDB_val old_value;
+        rc = mdb_get(txn, db_balance, &key, &old_value);
+        if (rc || old_value.mv_size != sizeof(uint64_t))
         {
-            err = mdb_strerror(rc);
-            log_error("Error putting payment: %s", err);
-            continue;
+            log_error("PAYOUTS LOCKED: missing/corrupt miner balance");
+            goto abort_txn;
         }
-    }
-    if ((rc = mdb_txn_commit(txn)))
-    {
-        err = mdb_strerror(rc);
-        log_error("Error committing payment: %s", err);
-        mdb_txn_abort(txn);
-        goto cleanup;
+        uint64_t current;
+        memcpy(&current, old_value.mv_data, sizeof(current));
+        if (current < p->amount)
+        {
+            log_error("PAYOUTS LOCKED: miner balance smaller than transfer");
+            goto abort_txn;
+        }
+        current -= p->amount;
+        MDB_val new_value = {sizeof(current), &current};
+        rc = mdb_put(txn, db_balance, &key, &new_value, 0);
+        if (rc)
+            goto abort_txn;
+
+        payment_t paid = *p;
+        paid.timestamp = now;
+        MDB_val record = {sizeof(paid), &paid};
+        rc = mdb_put(txn, db_payments, &key, &record, MDB_APPENDDUP);
+        if (rc)
+            goto abort_txn;
     }
 
-cleanup:
-    json_object_put(root);
+    /* Store each confirmed transaction ID with the exact payout request.
+     * This makes receipts durable and auditable in the same LMDB commit.
+     */
+    for (size_t i=0; i<json_object_array_length(hashes); ++i)
+    {
+        const char *txid = json_object_get_string(
+                json_object_array_get_idx(hashes, i));
+        char receipt_key_buf[sizeof("payout_receipt_") + 64] = {0};
+        snprintf(receipt_key_buf, sizeof(receipt_key_buf),
+                 "payout_receipt_%s", txid);
+        MDB_val receipt_key = {strlen(receipt_key_buf), receipt_key_buf};
+        MDB_val receipt = {strlen(batch->request), batch->request};
+        rc = mdb_put(txn, db_properties, &receipt_key, &receipt,
+                     MDB_NOOVERWRITE);
+        if (rc)
+        {
+            log_error("PAYOUTS LOCKED: duplicate receipt or storage error");
+            goto abort_txn;
+        }
+    }
+
+    rc = mdb_del(txn, db_properties, &intent_key, NULL);
+    if (rc)
+        goto abort_txn;
+
+    rc = mdb_txn_commit(txn);
+    txn = NULL;
+    if (rc)
+        goto db_error;
+    log_info("Payout transfer confirmed and atomically settled (%zu transaction IDs)",
+             json_object_array_length(hashes));
+    goto done;
+
+abort_txn:
+    mdb_txn_abort(txn);
+    txn = NULL;
+db_error:
+    log_error("PAYOUTS LOCKED: cannot settle payment ledger: %s; "
+              "durable intent retained", rc ? mdb_strerror(rc) : "inconsistent balance");
+done:
+    if (root)
+        json_object_put(root);
 }
 
 static int
@@ -2920,29 +3085,88 @@ send_payments(void)
     size_t proc = gbag_used(bag_pay);
     if (proc)
     {
-        size_t body_size = 160 * proc + 128;
-        char body[body_size];
-        char *start = body;
-        char *end = body + body_size;
-        start = stecpy(start, "{\"id\":\"0\",\"jsonrpc\":\"2.0\",\"method\":"
-                "\"transfer_split\",\"params\":{\"destinations\":[", end);
+        /* JSON-C serializes the wallet request. Do not build financial RPC
+         * messages with overlapping string writes or unchecked sprintf. */
+        json_object *rpc = json_object_new_object();
+        json_object *params = json_object_new_object();
+        json_object *destinations = json_object_new_array();
+        if (!rpc || !params || !destinations)
+        {
+            if (rpc) json_object_put(rpc);
+            if (params) json_object_put(params);
+            if (destinations) json_object_put(destinations);
+            gbag_free(bag_pay);
+            log_error("Payout JSON allocation failed; transfer NOT sent");
+            return -1;
+        }
+        json_object_object_add(rpc, "id", json_object_new_string("0"));
+        json_object_object_add(rpc, "jsonrpc", json_object_new_string("2.0"));
+        json_object_object_add(rpc, "method", json_object_new_string("transfer_split"));
+        json_object_object_add(params, "destinations", destinations);
+        json_object_object_add(rpc, "params", params);
+
         payment_t *p = (payment_t*) gbag_first(bag_pay);
         while ((p = gbag_next(bag_pay, 0)))
         {
-            start = stecpy(start, "{\"address\":\"", end);
-            start = stecpy(start, p->address, end);
-            start = stecpy(start, "\",\"amount\":", end);
-            sprintf(start, "%"PRIu64"}", p->amount);
-            start = body + strlen(body);
-            if (--proc)
-                start = stecpy(start, ",", end);
-            else
-                start = stecpy(start, "]}}", end);
+            if (p->amount > INT64_MAX ||
+                strnlen(p->address, ADDRESS_MAX) >= ADDRESS_MAX)
+            {
+                log_error("Invalid payout destination or amount; transfer NOT sent");
+                json_object_put(rpc);
+                gbag_free(bag_pay);
+                return -1;
+            }
+            json_object *destination = json_object_new_object();
+            if (!destination ||
+                json_object_object_add(destination, "address",
+                    json_object_new_string(p->address)) != 0 ||
+                json_object_object_add(destination, "amount",
+                    json_object_new_int64((int64_t)p->amount)) != 0 ||
+                json_object_array_add(destinations, destination) != 0)
+            {
+                log_error("Payout destination serialization failed; transfer NOT sent");
+                if (destination) json_object_put(destination);
+                json_object_put(rpc);
+                gbag_free(bag_pay);
+                return -1;
+            }
         }
-        log_trace(body);
+
+        const char *serialized = json_object_to_json_string_ext(
+                rpc, JSON_C_TO_STRING_PLAIN);
+        payout_batch_t *batch = calloc(1, sizeof(*batch));
+        if (serialized && batch)
+            batch->request = strdup(serialized);
+        json_object_put(rpc);
+        if (!batch || !batch->request)
+        {
+            log_error("Payout request serialization failed; transfer NOT sent");
+            payout_batch_free(batch);
+            gbag_free(bag_pay);
+            return -1;
+        }
+        /* Independently reject malformed or non-object request JSON before
+         * recording the durable intent. No wallet request if validation fails. */
+        json_object *validation = json_tokener_parse(batch->request);
+        if (!validation || !json_object_is_type(validation, json_type_object))
+        {
+            log_error("Payout request failed local JSON validation; transfer NOT sent");
+            if (validation) json_object_put(validation);
+            payout_batch_free(batch);
+            gbag_free(bag_pay);
+            return -1;
+        }
+        json_object_put(validation);
+        if (payout_intent_create(batch->request))
+        {
+            payout_batch_free(batch);
+            gbag_free(bag_pay);
+            return -1;
+        }
+        batch->payments = bag_pay;
         rpc_callback_t *cb = rpc_callback_new(
-                rpc_on_wallet_transferred, bag_pay, rpc_bag_free);
-        rpc_wallet_request(pool_base, body, cb);
+                rpc_on_wallet_transferred, batch, payout_batch_free);
+        rpc_wallet_request(pool_base, batch->request, cb);
     }
     else
         gbag_free(bag_pay);
@@ -3980,7 +4204,20 @@ miner_on_submit(json_object *message, client_t *client)
         bt = job->miner_template;
     else
         bt = job->block_template;
+
+    if (!bt || !bt->block_blob || !bt->block_blob_size)
+    {
+        send_validation_error(client, "invalid job template");
+        return;
+    }
+
     unsigned char *block = calloc(bt->block_blob_size, sizeof(char));
+    if (!block)
+    {
+        log_error("Unable to allocate submission block");
+        send_validation_error(client, "internal allocation failure");
+        return;
+    }
     memcpy(block, bt->block_blob, bt->block_blob_size);
 
     unsigned char *p = block;
@@ -4186,8 +4423,7 @@ post_hash:
         b->status = BLOCK_LOCKED;
         b->reward = miner_reward;
         b->timestamp = now;
-        if (upstream_event)
-            upstream_send_client_block(b);
+        /* Forward to upstream only after the daemon confirms acceptance. */
         rpc_request(pool_base, body, cb);
         free(block_hex);
     }
