@@ -1,0 +1,23 @@
+{
+  "feelcoin": {
+    "name": "Feelcoin",
+    "canonicalName": "Feelcoin",
+    "symbol": "FEEL",
+    "family": "cryptonote",
+    "website": "https://feelcoin.org/",
+    "github": "https://github.com/feelcoin-org/feelcoin",
+    "hash": "randomx",
+    "hashVariant": 0,
+    "blobType": 0,
+    "smallestUnit": 1000000000000,
+    "addressPrefix": 84,
+    "addressPrefixTestnet": 90,
+    "addressPrefixStagenet": 96,
+    "addressPrefixIntegrated": 85,
+    "addressPrefixIntegratedTestnet": 91,
+    "addressPrefixIntegratedStagenet": 97,
+    "subAddressPrefix": 86,
+    "subAddressPrefixTestnet": 92,
+    "subAddressPrefixStagenet": 98
+  }
+}
