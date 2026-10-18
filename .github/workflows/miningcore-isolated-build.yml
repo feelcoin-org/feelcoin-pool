@@ -1,0 +1,85 @@
+name: Miningcore Isolated Candidate Build
+
+# IMPORTANT: Compile the *external, pinned* Miningcore candidate. This does not
+# install, deploy, launch a miner, connect a wallet, or submit Feelcoin blocks.
+on:
+  push:
+    branches:
+      - research/miningcore-feasibility-20261018
+    paths:
+      - 'research/miningcore/**'
+      - 'tests/test_feelcoin_miningcore_profile.py'
+      - '.github/workflows/miningcore-isolated-build.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  candidate-build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+      DOTNET_NOLOGO: '1'
+      NUGET_XMLDOC_MODE: skip
+    steps:
+      - name: Checkout review branch (no persisted credentials)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          path: feelcoin-review
+
+      - name: Checkout PINNED public Miningcore source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: NINJAK1DD/miningcore
+          ref: 89f7070c1ca0e3965d9c5a2e07fa42caf65f5e70
+          persist-credentials: false
+          path: miningcore-candidate
+          fetch-depth: 0
+
+      - name: Verify candidate revision and profile contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git -C miningcore-candidate rev-parse HEAD)" = "89f7070c1ca0e3965d9c5a2e07fa42caf65f5e70"
+          python3 feelcoin-review/tests/test_feelcoin_miningcore_profile.py \
+            miningcore-candidate/src/Miningcore/coins.json
+          python3 -m py_compile feelcoin-review/tools/feelcoin_miningcore_probe.py
+
+      - name: Install build prerequisites (ephemeral runner only)
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get -o Acquire::Retries=3 update
+          sudo apt-get -o Acquire::Retries=3 install -y \
+            cmake ninja-build build-essential libssl-dev pkg-config \
+            libboost-all-dev libsodium-dev libzmq3-dev libgmp-dev
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Restore pinned candidate
+        working-directory: miningcore-candidate
+        shell: bash
+        run: dotnet restore src/Miningcore/Miningcore.csproj
+
+      - name: Build candidate, including native CryptoNote/RandomX libraries
+        working-directory: miningcore-candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          dotnet build src/Miningcore/Miningcore.csproj \
+            --configuration Release --framework net10.0 --no-restore \
+            --verbosity minimal
+
+      - name: Report precisely what passed
+        shell: bash
+        run: |
+          echo "Candidate build: PASS"
+          echo "FEEL JSON profile: structural validation only"
+          echo "FEEL daemon, blocks, coinbase, SOLO, payouts: NOT tested"
+          echo "Production pool and wallets: NOT accessed"
