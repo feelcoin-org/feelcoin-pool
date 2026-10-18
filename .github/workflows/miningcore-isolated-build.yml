@@ -62,6 +62,35 @@ jobs:
         with:
           dotnet-version: 10.0.x
 
+      - name: Apply ephemeral advisory fix; do not silence NuGet audit
+        working-directory: miningcore-candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import xml.etree.ElementTree as ET
+          project = Path("src/Miningcore/Miningcore.csproj")
+          tree = ET.parse(project)
+          root = tree.getroot()
+          affected = [
+              node for node in root.findall(".//PackageReference")
+              if node.attrib.get("Include", "").lower() == "system.security.cryptography.pkcs"
+          ]
+          if affected:
+              raise SystemExit("STOP: unexpected existing Pkcs package reference")
+          item_group = ET.SubElement(root, "ItemGroup")
+          ET.SubElement(item_group, "PackageReference", {
+              "Include": "System.Security.Cryptography.Pkcs",
+              "Version": "10.0.13"
+          })
+          tree.write(project, encoding="unicode", xml_declaration=False)
+          PY
+          test "$(git diff --name-only)" = "src/Miningcore/Miningcore.csproj"
+          grep -q 'Version="10.0.13"' src/Miningcore/Miningcore.csproj
+          echo "Pinned candidate source preserved in Git; only sandbox csproj modified"
+          echo "NuGet vulnerability warnings remain errors"
+          
       - name: Restore pinned candidate
         working-directory: miningcore-candidate
         shell: bash
