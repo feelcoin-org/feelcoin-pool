@@ -12,7 +12,7 @@ Status: proposed configuration pending explicit confirmation and integration tes
 ## Proposed economics
 - PPLNS fee: 1% (proposed; old pool remains 0.5% until explicitly communicated cutover).
 - SOLO fee: 1% proposed; fee handling must be tested separately.
-- Minimum payout: 1 FEEL proposed; confirm network fees, atomic rounding, and miner earnings before finalizing.
+- Minimum payout: 5 FEEL proposed to reduce transaction frequency; confirm network fees, atomic rounding, and effects on small miners before finalizing. Accrued balances below threshold remain owed and carry forward; document exit/closure policy.
 - Additional Miningcore developer deduction: 0% required; prove with payout-path audit and tests.
 - Feelcoin protocol treasury: separate consensus-level allocation, not pool fee.
 - Payout engine DISABLED until actual reward, maturity, security, reconciliations and atomic-unit tests pass.
