@@ -10,8 +10,8 @@ Status: proposed configuration pending explicit confirmation and integration tes
 - Do not mix historic PPLNS miner liabilities with new Pool V2 wallet funds; reconcile and settle old balances separately, record outstanding immature blocks.
 
 ## Proposed economics
-- PPLNS fee: 1% (proposed; old pool remains 0.5% until explicitly communicated cutover).
-- SOLO fee: 1% proposed; fee handling must be tested separately.
+- PPLNS fee: 0.5% (confirmed; unchanged from existing pool).
+- SOLO fee: 0.5% (confirmed; fee handling must be tested separately).
 - Minimum payout: 5 FEEL proposed to reduce transaction frequency; confirm network fees, atomic rounding, and effects on small miners before finalizing. Accrued balances below threshold remain owed and carry forward; document exit/closure policy.
 - Additional Miningcore developer deduction: 0% required; prove with payout-path audit and tests.
 - Feelcoin protocol treasury: separate consensus-level allocation, not pool fee.
