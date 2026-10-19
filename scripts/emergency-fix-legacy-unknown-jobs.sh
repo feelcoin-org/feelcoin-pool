@@ -40,6 +40,7 @@ import sys,re
 actual=Path(sys.argv[1]).read_text()
 p=Path(sys.argv[2])
 s=p.read_text()
+assert actual == s, 'STOP: deployed source differs from committed source; refusing unsafe replacement'
 for name,number in [('CLIENT_JOBS_MAX',4),('BLOCK_TEMPLATES_MAX',4)]:
     marker=f'#define {name} {number}'
     assert actual.count(marker)==1 and s.count(marker)==1, f'STOP: unexpected {name} definition'
