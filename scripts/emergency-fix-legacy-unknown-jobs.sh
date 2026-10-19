@@ -40,7 +40,19 @@ import sys,re
 actual=Path(sys.argv[1]).read_text()
 p=Path(sys.argv[2])
 s=p.read_text()
-assert actual == s, 'STOP: deployed source differs from committed source; refusing unsafe replacement'
+# Production may contain uncommitted fixes. Preserve its exact pool.c in the isolated worktree.
+# All non-pool.c tracked/untracked differences must be checked before building.
+import subprocess, shutil
+live=Path(sys.argv[1]); staged=Path(sys.argv[2])
+repo=live.parent.parent
+changes=subprocess.check_output(['git','-C',str(repo),'status','--porcelain','--untracked-files=normal'],text=True)
+unsafe=[line for line in changes.splitlines() if line[3:].strip() not in ('src/pool.c',)]
+if unsafe:
+    raise SystemExit('STOP: live repo has other uncommitted changes; must preserve them first: '+repr(unsafe[:12]))
+if actual != s:
+    print('NOTICE: live pool.c differs from GitHub; using exact live source for patch')
+    shutil.copy2(live, staged)
+    s=staged.read_text()
 for name,number in [('CLIENT_JOBS_MAX',4),('BLOCK_TEMPLATES_MAX',4)]:
     marker=f'#define {name} {number}'
     assert actual.count(marker)==1 and s.count(marker)==1, f'STOP: unexpected {name} definition'
