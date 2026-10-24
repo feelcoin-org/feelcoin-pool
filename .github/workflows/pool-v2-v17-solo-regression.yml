@@ -1,0 +1,43 @@
+name: Feelcoin Pool V2 - v17 and SOLO offline regression
+on:
+  push:
+    branches: [feature/pool-v2-miningcore-evaluation-20261019]
+    paths:
+      - '.github/workflows/pool-v2-v17-solo-regression.yml'
+      - 'tests/v17_solo_static_gate.py'
+      - 'scripts/pool-v2-create-disabled-configs.sh'
+      - 'scripts/pool-v2-offline-reward-invariants.py'
+      - 'research/miningcore/feelcoin.coin.json'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  static-gate:
+    name: PPLNS/SOLO v17 static invariant tests - NOT deployment approval
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Load exact reviewed Feelcoin v1.0 consensus source
+        uses: actions/checkout@v4
+        with:
+          repository: feelcoin-org/feelcoin
+          ref: 6b1a1f08f82fb1ce33343ee512f852872553f824
+          path: core-v1-pinned
+          persist-credentials: false
+      - name: Verify fixed Core commit
+        run: |
+          set -euo pipefail
+          test "$(git -C core-v1-pinned rev-parse HEAD)" = 6b1a1f08f82fb1ce33343ee512f852872553f824
+      - name: Run strict offline protocol and reward sanity tests
+        run: |
+          set -euo pipefail
+          python3 tests/v17_solo_static_gate.py core-v1-pinned
+          python3 -m unittest discover -s tests -p 'test_feelcoin_miningcore_profile.py' -v
+      - name: Emit release limitations
+        run: |
+          echo 'PASS IS NOT CUTOVER APPROVAL.'
+          echo 'No Stratum miner shares, blocks, wallet payment or accounting migration are exercised here.'
+          echo 'Mainnet consensus fork v17 is scheduled by block height 21205, not switched on by this CI.'
