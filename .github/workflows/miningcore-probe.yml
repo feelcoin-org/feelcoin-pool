@@ -1,0 +1,27 @@
+name: Miningcore Feasibility Probe
+
+on:
+  push:
+    branches:
+      - research/miningcore-feasibility-20261018
+  pull_request:
+    paths:
+      - 'tools/feelcoin_miningcore_probe.py'
+      - 'tests/test_feelcoin_miningcore_probe.py'
+      - '.github/workflows/miningcore-probe.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  offline-probe-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Python syntax and safety tests (no daemon/no wallet)
+        run: |
+          python -m py_compile tools/feelcoin_miningcore_probe.py
+          python -m unittest discover -s tests -p 'test_feelcoin_miningcore_probe.py' -v
